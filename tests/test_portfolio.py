@@ -54,6 +54,13 @@ def test_bull_score_uptrend_vs_downtrend():
     assert pf.bull_score_last([1, 2, 3]) == 0    # too little history → 0
 
 
+def test_drawdown_frac():
+    assert pf.drawdown_frac(1.0, 1.0) == 0.0          # at the high-water mark
+    assert pf.drawdown_frac(1.0, 1.2) == 0.0          # new high → no drawdown
+    assert abs(pf.drawdown_frac(1.0, 0.8) - 0.20) < 1e-9   # 20% below peak
+    assert pf.drawdown_frac(0.0, 0.0) == 0.0          # no divide-by-zero
+
+
 def test_market_breadth():
     up = [100 + i for i in range(60)]
     down = [100 - i * 0.5 for i in range(60)]

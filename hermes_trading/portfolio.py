@@ -29,6 +29,7 @@ from .adapters import SchemaError
 STATE_DIR = Path(__file__).resolve().parent.parent / "state"
 PORTFOLIO_FILE = STATE_DIR / "portfolio.json"
 HEARTBEAT_FILE = STATE_DIR / "heartbeat.json"
+EQUITY_HISTORY_FILE = STATE_DIR / "equity_history.jsonl"  # feed for the drift tracker
 DAY_MS = 86_400_000
 
 
@@ -79,6 +80,11 @@ def turnover(old: Dict[str, float], new: Dict[str, float]) -> float:
     return sum(abs(new.get(k, 0.0) - old.get(k, 0.0)) for k in keys)
 
 
+def drawdown_frac(peak: float, mtm: float) -> float:
+    """Fractional drop of marked equity below its high-water mark (0 if at/above)."""
+    return (peak - mtm) / peak if peak > 0 and mtm < peak else 0.0
+
+
 def bull_score_last(closes: List[float]) -> int:
     """0..10 count of daily bullish checks on the latest bar (same set as the
     validated test_overlay.py / FPU-MAX matrix idea). Needs ~30+ bars."""
@@ -107,7 +113,7 @@ def bull_score_last(closes: List[float]) -> int:
 
 def market_breadth(closes_by_sym: Dict[str, List[float]], bull_min: int) -> float:
     """Fraction of the universe that is broadly bullish (bull_score >= bull_min)."""
-    scores = [bull_score_last(c) for c in closes_by_sym.values() if c]
+    scores = [bull_score_last(c) for c in closes_by_sym.values() if len(c)]
     return (sum(1 for s in scores if s >= bull_min) / len(scores)) if scores else 0.0
 
 
@@ -131,6 +137,19 @@ def _save_state(st: dict) -> None:
 def _write_heartbeat(extra: dict) -> None:
     HEARTBEAT_FILE.parent.mkdir(parents=True, exist_ok=True)
     HEARTBEAT_FILE.write_text(json.dumps({"ts": time.time(), **extra}, indent=2))
+
+
+def _append_equity(st: dict, regime: str, breadth: Optional[float] = None) -> None:
+    """Persistent realised-equity series — the data the live-vs-backtest drift
+    tracker reads (scripts/drift_tracker.py). Append-only, survives restarts."""
+    EQUITY_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    rec = {"ts": time.time(), "rebalance": st.get("rebalances"),
+           "equity": round(st["equity"], 6),
+           "peak": round(st.get("peak_equity", st["equity"]), 6), "regime": regime}
+    if breadth is not None:
+        rec["breadth"] = round(breadth, 3)
+    with EQUITY_HISTORY_FILE.open("a") as fh:
+        fh.write(json.dumps(rec) + "\n")
 
 
 # --------------------------------------------------------------------------- #
@@ -177,6 +196,11 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
     regime_gate = bool(e.get("regime_gate", False))
     breadth_thr = float(e.get("breadth_threshold", 0.4))
     bull_min = int(e.get("breadth_bull_min", 6))
+    # Circuit breaker: if marked equity falls this far below its high-water mark,
+    # emergency-flatten to cash and HALT until manually reset (delete portfolio.json
+    # or set "halted": false). A backstop for "the strategy itself broke", separate
+    # from the regime gate. 0/absent = disabled.
+    max_dd_halt = float((strategy.get("risk") or {}).get("max_drawdown_halt", 0.0)) or None
 
     rprint(f"[bold green]Booting hermes-trading worker[/] · xsmom portfolio · paper mode")
     rprint(f"[dim]{len(universe)} coins · lookback{lookback}d skip{skip} "
@@ -193,7 +217,29 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
                 raise RuntimeError(f"only {len(closes)} coins fetched; need {2*k if allow_short else k}")
             now_px = {s: c[-1] for s, c in closes.items()}
             st = _load_state()
-            due = now_ms - st["last_rebalance_ms"] >= rebal_days * DAY_MS
+
+            # High-water mark + circuit breaker (checked EVERY tick, so a mid-week
+            # blowup trips it without waiting for the weekly rebalance).
+            unreal0 = rebalance_pnl(st["weights"], st["entry_px"], now_px)
+            mtm0 = st["equity"] * (1.0 + unreal0)
+            st["peak_equity"] = max(st.get("peak_equity", st["equity"]), mtm0)
+            dd = drawdown_frac(st["peak_equity"], mtm0)
+            if max_dd_halt and not st.get("halted") and st["weights"] and dd >= max_dd_halt:
+                turn = turnover(st["weights"], {})
+                st["equity"] = mtm0 * (1.0 - turn * cost)   # realise loss + exit cost
+                st["weights"] = {}
+                st["entry_px"] = {}
+                st["halted"] = True
+                _save_state(st)
+                _append_equity(st, regime="HALT")
+                rprint(f"[bold red]RISK HALT[/] drawdown {dd:.1%} ≥ {max_dd_halt:.0%} "
+                       f"— flattened to cash, trading halted (reset: delete portfolio.json)")
+                print("RISK_HALT_JSON " + json.dumps(
+                    {"ts": time.time(), "drawdown": round(dd, 4), "equity": round(st["equity"], 5)}),
+                    flush=True)
+
+            # Halted => never re-enter; stay in cash until manually reset.
+            due = (not st.get("halted")) and (now_ms - st["last_rebalance_ms"] >= rebal_days * DAY_MS)
 
             if due:
                 # 1) Realise P&L of the existing book since the last rebalance.
@@ -220,6 +266,7 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
                 st["last_rebalance_ms"] = now_ms
                 st["rebalances"] += 1
                 _save_state(st)
+                _append_equity(st, regime=("CASH" if flat else "invested"), breadth=breadth)
                 event = {"ts": time.time(), "equity": round(st["equity"], 5),
                          "rebalance": st["rebalances"], "longs": longs, "shorts": shorts,
                          "turnover": round(turn, 3), "breadth": round(breadth, 2),
@@ -260,8 +307,11 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
             _write_heartbeat({"tick": tick, "equity": st["equity"],
                               "mtm_equity": round(st["equity"] * (1.0 + unreal_now), 5),
                               "unrealised_pct": round(unreal_now * 100, 3),
+                              "peak_equity": round(st.get("peak_equity", st["equity"]), 5),
+                              "drawdown_pct": round(dd * 100, 2),
+                              "halted": bool(st.get("halted")),
                               "rebalances": st["rebalances"], "held": len(st["weights"]),
-                              "status": "ok"})
+                              "status": "halted" if st.get("halted") else "ok"})
         except SchemaError as exc:
             _write_heartbeat({"tick": tick, "status": "halt", "error": str(exc)})
             rprint(f"[bold red]SchemaError — halting:[/] {exc}")

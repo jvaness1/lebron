@@ -12,6 +12,7 @@ state/trades.jsonl
 state/hypotheses.jsonl
 state/heartbeat.json
 state/portfolio.json
+state/equity_history.jsonl
 state/history/
 
 .DS_Store

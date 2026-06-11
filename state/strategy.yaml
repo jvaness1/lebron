@@ -5,7 +5,7 @@
 # fees). position_size_r scales return AND drawdown: 0.3 → ~15% maxDD in backtest.
 # allow_short: true is the validated edge but needs PERPETUAL FUTURES to trade for
 # real; in paper it is simulated. Set false for a spot-only (long top-K) variant.
-version: '02'
+version: '03'
 entry:
   indicator: xsmom
   lookback_days: 30
@@ -23,6 +23,10 @@ position_size_r: 0.3
 costs:
   fees_bps: 10.0
   slippage_bps: 5.0
+risk:
+  max_drawdown_halt: 0.20   # circuit breaker: flatten to cash + halt if equity falls
+                            # 20% below its high-water mark (strategy DD is ~4-11%, so
+                            # this only trips if something is genuinely broken)
 universe:
   - BTC/USDT
   - ETH/USDT

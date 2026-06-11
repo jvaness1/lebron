@@ -1,0 +1,62 @@
+{
+  "P0a": "walk-forward regime gate",
+  "folds": [
+    {
+      "fold": 0,
+      "chosen_threshold": 0.3,
+      "train_sharpe": 0.0,
+      "test_sharpe": 0.0,
+      "test_mdd": 0.0,
+      "test_total": 0.0,
+      "active_pct": 0.0,
+      "rebalances": 0
+    },
+    {
+      "fold": 1,
+      "chosen_threshold": 0.3,
+      "train_sharpe": 0.0,
+      "test_sharpe": 0.0,
+      "test_mdd": 0.0,
+      "test_total": 0.0,
+      "active_pct": 0.0,
+      "rebalances": 0
+    },
+    {
+      "fold": 2,
+      "chosen_threshold": 0.3,
+      "train_sharpe": 0.0,
+      "test_sharpe": 0.0,
+      "test_mdd": 0.0,
+      "test_total": 0.0,
+      "active_pct": 0.0,
+      "rebalances": 0
+    },
+    {
+      "fold": 3,
+      "chosen_threshold": 0.3,
+      "train_sharpe": 0.0,
+      "test_sharpe": 0.0,
+      "test_mdd": 0.0,
+      "test_total": 0.0,
+      "active_pct": 0.0,
+      "rebalances": 0
+    },
+    {
+      "fold": 4,
+      "chosen_threshold": 0.3,
+      "train_sharpe": 0.0,
+      "test_sharpe": 0.0,
+      "test_mdd": 0.0,
+      "test_total": 0.0,
+      "active_pct": 0.0,
+      "rebalances": 0
+    }
+  ],
+  "aggregate": {
+    "sharpe": 0.0,
+    "mdd": 0.0,
+    "total": 0.0,
+    "steps": 86,
+    "active": 86
+  }
+}

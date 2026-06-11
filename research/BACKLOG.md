@@ -44,8 +44,11 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       (no perps needed)? Is long-only top-K good enough to run on spot for real?
 - [ ] **P8 — Cost/turnover sensitivity.** Re-run the live config at maker vs taker
       fees; how fragile is the edge to slippage assumptions?
-- [ ] **P9 — Live-vs-backtest drift tracker.** Compare the live paper equity curve
-      (state/portfolio.json on Railway) to backtest expectation; flag divergence.
+- [~] **P9 — Live-vs-backtest drift tracker.** TOOLING BUILT (scripts/drift_tracker.py
+      + the engine now logs state/equity_history.jsonl each rebalance). Compares live
+      realised equity to a backtest over the same dates and flags divergence >3pp.
+      OPEN part: needs ≥3 live rebalances (a few weeks) before it can conclude — re-run
+      it periodically and record the tracking error in LOG.md once data accrues.
 
 ## Done
 (findings recorded in LOG.md)
