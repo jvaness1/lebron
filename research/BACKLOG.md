@@ -11,20 +11,18 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
 
 ## Open (priority order)
 
-- [ ] **P0 — Indicator/regime overlay on the live xsmom strategy.** The "TradingView
-      MAX" 21-indicator × multi-timeframe matrix is just analytics the bot already
-      computes (hermes_trading/features.py). Test honestly whether using it on the
-      cross-sectional momentum legs beats the pure-momentum baseline OOS: (a) only
-      go long momentum-leaders that ALSO pass a multi-TF bull/trend screen and only
-      short laggards that fail it; (b) weight tilt by bull_count (conviction sizing);
-      (c) a market-breadth regime gate (e.g. only deploy when >50% of the universe is
-      above its 50d MA). Build it on KuCoin daily data, strict train→test selection,
-      OOS only, compare Sharpe/return/maxDD against the current 30d/weekly baseline.
-      Deploy (write state/strategy.xsmom_filtered.yaml) ONLY if it beats baseline OOS.
-      NOTE: do NOT try to read TradingView's desktop UI as a data source — it adds no
-      information ccxt doesn't already give and is fragile; compute the indicators in
-      Python from the same KuCoin data the live bot uses.
-
+- [x] **P0 — Indicator/regime overlay on the live xsmom strategy.** DONE (see LOG
+      2026-06-11): per-coin confirmation filter & conviction tilt do NOT help; a
+      MARKET-BREADTH REGIME GATE does (OOS Sharpe 0.31→1.61, maxDD 48%→9%, robust
+      across thresholds). Recommended for deployment. Follow-ups below (P0a/P0b).
+- [ ] **P0a — Walk-forward + deploy the breadth regime gate.** Confirm the gate holds
+      across 4–5 sequential windows (not just one split) and check the Sharpe isn't
+      purely an artefact of zero-return cash periods (report active-period stats too).
+      If it holds, it's the strongest improvement found — deploy to live xsmom.
+- [ ] **P0b — Alternative regime signals.** Test BTC>200d-MA and BTC 30d-return>0 as
+      the regime gate instead of universe breadth; do they match/beat breadth, and are
+      they less correlated to the book? Does any regime gate also rescue the daily-frame
+      variant (P1)?
 - [ ] **P1 — Validate the daily-frame variant properly.** A test-set search hinted
       daily-rebalance + 14d lookback + K3 → +179% / Sharpe 1.42 OOS, BUT that was
       in-sample-selected. Do it right: pick the best (lookback, K) on TRAIN only,
