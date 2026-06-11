@@ -1,0 +1,8 @@
+.venv/
+.git/
+__pycache__/
+**/__pycache__/
+*.pyc
+.env
+hermes-trading-config/
+.DS_Store

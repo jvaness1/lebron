@@ -1,0 +1,18 @@
+# Candidate: 1h Donchian breakout (Turtle-style). Validated out-of-sample after
+# costs (see scripts/validate_donchian.py). NOT the live strategy until swapped
+# into strategy.yaml + redeployed. position_size_r 0.5 keeps max drawdown ~8%
+# (the goal budget); the raw strategy at size 1.0 draws ~16%.
+version: '01'
+timeframe: 1h
+entry:
+  indicator: donchian
+  direction: long
+  breakout_lookback: 100   # enter long when price breaks the prior 100h high
+exit:
+  donchian_exit: 10        # exit when price breaks the prior 10h low
+stop_loss_pct: 4.0
+position_size_r: 0.5
+cooldown_minutes: 0
+costs:
+  fees_bps: 10.0
+  slippage_bps: 5.0

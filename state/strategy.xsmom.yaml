@@ -1,0 +1,44 @@
+# Candidate: cross-sectional momentum portfolio. The only strategy in the search
+# with a robust OOS edge net of costs (scripts/xsmom.py): long-short Sharpe ~1.3,
+# +143% OOS while the market fell -32% (survivorship-mitigated). Rebalances weekly
+# (~10 position changes/week, not intraday — intraday + edge is killed by taker
+# fees). position_size_r scales return AND drawdown: 0.3 → ~15% maxDD in backtest.
+# allow_short: true is the validated edge but needs PERPETUAL FUTURES to trade for
+# real; in paper it is simulated. Set false for a spot-only (long top-K) variant.
+version: '01'
+entry:
+  indicator: xsmom
+  lookback_days: 30
+  skip_days: 0
+  top_k: 5
+  allow_short: true
+rebalance_days: 7
+position_size_r: 0.3
+costs:
+  fees_bps: 10.0
+  slippage_bps: 5.0
+universe:
+  - BTC/USDT
+  - ETH/USDT
+  - SOL/USDT
+  - XRP/USDT
+  - ADA/USDT
+  - DOGE/USDT
+  - AVAX/USDT
+  - LINK/USDT
+  - DOT/USDT
+  - LTC/USDT
+  - BCH/USDT
+  - TRX/USDT
+  - ATOM/USDT
+  - NEAR/USDT
+  - APT/USDT
+  - ARB/USDT
+  - OP/USDT
+  - INJ/USDT
+  - SUI/USDT
+  - FIL/USDT
+  - ETC/USDT
+  - XLM/USDT
+  - AAVE/USDT
+  - UNI/USDT

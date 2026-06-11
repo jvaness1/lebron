@@ -1,0 +1,17 @@
+# secrets — never commit
+.env
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# runtime data (engine/portfolio state, logs) — not needed for research
+logs/
+state/trades.jsonl
+state/hypotheses.jsonl
+state/heartbeat.json
+state/portfolio.json
+state/history/
+
+.DS_Store

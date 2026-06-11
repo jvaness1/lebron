@@ -1,0 +1,16 @@
+asset: "SOL/USDT"
+target_return_30d: 0.10     # success: +10% over 30 days
+max_drawdown:      0.08     # failure: bail above 8% drawdown
+min_sharpe:        1.2      # quality bar
+failure_below:     -0.04    # score floor — steeply negative below this
+reflection_every:  5        # reflect & change one variable every N closed trades
+one_variable_only: true     # scientific-method guardrail
+
+reflection:
+  auto_apply: false         # OFF: live strategy is the validated Donchian breakout;
+                            # the deterministic tuner is RSI-specific and would mangle it.
+
+risk:                       # kill switch — gates NEW entries, never strands an open position
+  halt_on_drawdown:        0.08   # stop opening if equity drawdown ≥ 8%
+  daily_loss_limit_pct:    0.03   # stop opening for the rest of the UTC day if down ≥ 3%
+  max_consecutive_losses:  4      # stop opening after 4 losing trades in a row
