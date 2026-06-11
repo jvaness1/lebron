@@ -5,6 +5,29 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · P0a · REAL walk-forward of the regime gate (interactive, LOCAL data)
+Redone on real KuCoin daily (the cloud agent could only use SYNTHETIC data — its
+sandbox blocks all exchange APIs with 403 "host not in allowlist"). 5 sequential
+~239d OOS slices, FIXED gate config (each slice genuine OOS):
+  s1 gate -2.5%/Sh-0.26 vs base +22.5%/1.45 → base
+  s2 gate +11.5%/0.61   vs base +40.6%/1.24 → base
+  s3 gate +43.8%/1.47   vs base +76.5%/1.87 → base
+  s4 gate +86.3%/3.78   vs base +97.5%/2.98 → gate
+  s5 gate  -2.5%/-0.07  vs base -31.9%/-1.33 → gate (crash protection)
+  → gate beats baseline only 2/5 slices.
+Full gate: +513.8% / Sharpe 1.65 / maxDD 19.2% (71/167 in-market).
+ACTIVE-PERIOD Sharpe 2.75 (cash periods removed) → momentum edge is REAL, NOT a
+cash-variance artifact (settles that question).
+VERDICT (CORRECTS the rosy single-split P0): the regime gate is DRAWDOWN PROTECTION,
+not a return booster. It wins decisively only in bad regimes (s5: -32%→-2.5%) and
+LAGS the ungated book in bull regimes (sits in cash, misses gains). The P0 "0.31→1.61"
+was flattered because that one split included the crash the gate dodged. It's a
+risk/return CHOICE: gate = much smaller worst-case DD, lower return in rallies.
+Cloud agent's synthetic "3-4/5" was optimistic vs the real 2/5 — proof that synthetic
+validation can't be trusted and the research must run locally on real data.
+DECISION: gate stays live (DD control suits the real-money path) but flagged as a
+tradeoff, not an unambiguous upgrade.
+
 ## 2026-06-11 · P7a (partial) · perp funding cost magnitude (interactive session)
 OKX perp funding, 9 liquid coins, ~200 intervals each: avg ≈ +0.0017%/8h ≈ +1.9%/yr
 ONE-SIDED — small. On a DOLLAR-NEUTRAL long-short book the uniform funding component

@@ -15,10 +15,11 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       2026-06-11): per-coin confirmation filter & conviction tilt do NOT help; a
       MARKET-BREADTH REGIME GATE does (OOS Sharpe 0.31→1.61, maxDD 48%→9%, robust
       across thresholds). Recommended for deployment. Follow-ups below (P0a/P0b).
-- [ ] **P0a — Walk-forward + deploy the breadth regime gate.** Confirm the gate holds
-      across 4–5 sequential windows (not just one split) and check the Sharpe isn't
-      purely an artefact of zero-return cash periods (report active-period stats too).
-      If it holds, it's the strongest improvement found — deploy to live xsmom.
+- [x] **P0a — Walk-forward the breadth regime gate.** DONE on REAL KuCoin data (LOG
+      2026-06-11; scripts/walkforward_p0a.py). Gate beats baseline only 2/5 OOS slices;
+      it's DRAWDOWN PROTECTION (wins in crashes, lags in rallies), NOT a return booster.
+      Active-period Sharpe 2.75 → momentum edge is real (not a cash artifact). Gate kept
+      live as a risk/return tradeoff. The single-split P0 overstated it.
 - [ ] **P0b — Alternative regime signals.** Test BTC>200d-MA and BTC 30d-return>0 as
       the regime gate instead of universe breadth; do they match/beat breadth, and are
       they less correlated to the book? Does any regime gate also rescue the daily-frame
