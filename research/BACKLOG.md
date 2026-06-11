@@ -11,6 +11,20 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
 
 ## Open (priority order)
 
+- [ ] **P0 — Indicator/regime overlay on the live xsmom strategy.** The "TradingView
+      MAX" 21-indicator × multi-timeframe matrix is just analytics the bot already
+      computes (hermes_trading/features.py). Test honestly whether using it on the
+      cross-sectional momentum legs beats the pure-momentum baseline OOS: (a) only
+      go long momentum-leaders that ALSO pass a multi-TF bull/trend screen and only
+      short laggards that fail it; (b) weight tilt by bull_count (conviction sizing);
+      (c) a market-breadth regime gate (e.g. only deploy when >50% of the universe is
+      above its 50d MA). Build it on KuCoin daily data, strict train→test selection,
+      OOS only, compare Sharpe/return/maxDD against the current 30d/weekly baseline.
+      Deploy (write state/strategy.xsmom_filtered.yaml) ONLY if it beats baseline OOS.
+      NOTE: do NOT try to read TradingView's desktop UI as a data source — it adds no
+      information ccxt doesn't already give and is fragile; compute the indicators in
+      Python from the same KuCoin data the live bot uses.
+
 - [ ] **P1 — Validate the daily-frame variant properly.** A test-set search hinted
       daily-rebalance + 14d lookback + K3 → +179% / Sharpe 1.42 OOS, BUT that was
       in-sample-selected. Do it right: pick the best (lookback, K) on TRAIN only,
