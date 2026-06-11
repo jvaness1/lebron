@@ -40,8 +40,14 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       most recent days) to dodge short-term reversal. Better OOS?
 - [ ] **P6 — Longer history for majors.** Pull max KuCoin daily for the longest-lived
       coins; re-test on a longer, multi-regime window to shrink sample-size risk.
-- [ ] **P7 — Long-only spot viability.** How much edge survives without shorting
-      (no perps needed)? Is long-only top-K good enough to run on spot for real?
+- [x] **P7 — Long-only spot viability.** DONE (LOG 2026-06-11): long-only (no gate)
+      is real (+47% vs benchmark -31%) but mediocre (Sharpe ~0.8, ~46% DD); the breadth
+      gate HURTS long-only (it's long-short-specific). Spot real-money path is viable
+      but weak and needs its own risk control. Follow-up P7a below.
+- [ ] **P7a — Long-only risk control + funding cost.** Design a long-only-appropriate
+      risk control (trailing stop / vol-target / BTC-trend gate) to tame the ~46% DD,
+      and quantify perp FUNDING cost so we know if live long-short net-of-funding still
+      beats spot long-only (decides the real-money execution path: perps vs spot).
 - [ ] **P8 — Cost/turnover sensitivity.** Re-run the live config at maker vs taker
       fees; how fragile is the edge to slippage assumptions?
 - [~] **P9 — Live-vs-backtest drift tracker.** TOOLING BUILT (scripts/drift_tracker.py

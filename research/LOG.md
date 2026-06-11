@@ -5,6 +5,23 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · P7 · long-only spot viability + gate interaction (interactive session)
+OOS ~479d, 24 coins, K5/R7/LB30, 15bps/side, breadth ALIGNED to test window.
+  - long-short + gate (LIVE config): +123.9% / Sharpe 2.22 / maxDD 16.8%
+  - long-short, no gate:             +154.7% / 1.67 / 42.7%
+  - long-only + gate (spot):          -10.3% / -0.04 / 31.0%   ← gate HURTS long-only
+  - long-only, no gate (spot):        +47.3% / 0.81 / 46.4%    (benchmark -31.5%)
+VERDICT: the breadth regime gate is LONG-SHORT-SPECIFIC — big help to L/S (Sharpe↑,
+DD↓), but it HURTS long-only (cash periods miss the oversold-long rebounds). Real-money
+implications: the strong strategy needs PERPS (it's long-short). The no-perps spot path
+is long-only — real (beats benchmark) but mediocre (Sharpe ~0.8, ~46% DD) and must NOT
+use the breadth gate; it needs its own risk control. "Start real money on spot long-only"
+is possible but materially weaker than the live paper strategy. CAVEATS: one ~16mo OOS
+window, survivors-only, ~23 active rebalances.
+FOLLOW-UPS (P7a): design a long-only-appropriate risk control (trailing stop / vol-target)
+and re-test; quantify perp FUNDING cost to check live long-short net-of-funding still beats
+spot long-only.
+
 ## 2026-06-11 · P0 · indicator/regime overlay on xsmom (interactive session)
 Tested baseline pure momentum vs (a) per-coin bull-score confirmation filter,
 (b) conviction tilt by bull-score, (c) market-breadth regime gate. KuCoin daily,
