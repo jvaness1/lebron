@@ -5,6 +5,16 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · P7a (partial) · perp funding cost magnitude (interactive session)
+OKX perp funding, 9 liquid coins, ~200 intervals each: avg ≈ +0.0017%/8h ≈ +1.9%/yr
+ONE-SIDED — small. On a DOLLAR-NEUTRAL long-short book the uniform funding component
+cancels (longs pay, shorts receive); only the weight×funding correlation leaves a
+residual, expected to be low-single-digit %/yr — negligible vs the strategy's ~100%+
+gross. CONCLUSION: funding is NOT a dealbreaker for the perp long-short version.
+(Self-correction: an earlier ad-hoc "337%/yr spread" figure was a BAD calc — annualised
+a cross-sectional std by ×1095; ignore it.) STILL OPEN in P7a: a proper per-rebalance
+funding sim (apply each held coin's funding over the holding window) for the exact drag.
+
 ## 2026-06-11 · P7 · long-only spot viability + gate interaction (interactive session)
 OOS ~479d, 24 coins, K5/R7/LB30, 15bps/side, breadth ALIGNED to test window.
   - long-short + gate (LIVE config): +123.9% / Sharpe 2.22 / maxDD 16.8%
