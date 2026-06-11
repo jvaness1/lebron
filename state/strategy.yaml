@@ -5,13 +5,19 @@
 # fees). position_size_r scales return AND drawdown: 0.3 → ~15% maxDD in backtest.
 # allow_short: true is the validated edge but needs PERPETUAL FUTURES to trade for
 # real; in paper it is simulated. Set false for a spot-only (long top-K) variant.
-version: '01'
+version: '02'
 entry:
   indicator: xsmom
   lookback_days: 30
   skip_days: 0
   top_k: 5
   allow_short: true
+  # Regime gate (added v02, validated P0): only hold the book when the market is
+  # broadly bullish, else sit in CASH. OOS lifted Sharpe ~0.3->1.6, maxDD ~48%->9%,
+  # robust across thresholds. A coin counts bullish if its daily bull_score >= 6.
+  regime_gate: true
+  breadth_threshold: 0.4
+  breadth_bull_min: 6
 rebalance_days: 7
 position_size_r: 0.3
 costs:

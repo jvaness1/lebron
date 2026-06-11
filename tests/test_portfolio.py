@@ -44,3 +44,20 @@ def test_turnover():
     old = {"a": 0.5, "b": -0.5}
     new = {"a": 0.5, "c": -0.5}                  # b out, c in
     assert abs(pf.turnover(old, new) - 1.0) < 1e-9   # |−0.5−0| (b) + |−0.5−0| (c)
+
+
+def test_bull_score_uptrend_vs_downtrend():
+    up = [100 + i for i in range(60)]            # steady uptrend → strongly bullish
+    down = [100 - i * 0.5 for i in range(60)]    # downtrend → bearish
+    assert pf.bull_score_last(up) >= 8
+    assert pf.bull_score_last(down) <= 2
+    assert pf.bull_score_last([1, 2, 3]) == 0    # too little history → 0
+
+
+def test_market_breadth():
+    up = [100 + i for i in range(60)]
+    down = [100 - i * 0.5 for i in range(60)]
+    universe = {"a": up, "b": up, "c": down, "d": down}   # 2 of 4 bullish
+    assert abs(pf.market_breadth(universe, bull_min=6) - 0.5) < 1e-9
+    assert pf.market_breadth({"x": up, "y": up}, bull_min=6) == 1.0
+    assert pf.market_breadth({"x": down}, bull_min=6) == 0.0

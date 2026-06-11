@@ -19,6 +19,8 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
+import numpy as np
+import pandas as pd
 import yaml
 
 from . import adapters
@@ -77,6 +79,38 @@ def turnover(old: Dict[str, float], new: Dict[str, float]) -> float:
     return sum(abs(new.get(k, 0.0) - old.get(k, 0.0)) for k in keys)
 
 
+def bull_score_last(closes: List[float]) -> int:
+    """0..10 count of daily bullish checks on the latest bar (same set as the
+    validated test_overlay.py / FPU-MAX matrix idea). Needs ~30+ bars."""
+    c = pd.Series(closes, dtype=float)
+    if len(c) < 30:
+        return 0
+    e9, e21, e50, e200 = (c.ewm(span=s, adjust=False).mean() for s in (9, 21, 50, 200))
+    macd = c.ewm(span=12, adjust=False).mean() - c.ewm(span=26, adjust=False).mean()
+    hist = macd - macd.ewm(span=9, adjust=False).mean()
+    lo14, hi14 = c.rolling(14).min(), c.rolling(14).max()
+    sto = (c - lo14) / (hi14 - lo14) * 100
+    d = c.diff()
+    g = d.clip(lower=0).ewm(alpha=1/14, adjust=False).mean()
+    l = (-d.clip(upper=0)).ewm(alpha=1/14, adjust=False).mean()
+    rsi = 100 - 100 / (1 + g / l.replace(0, np.nan))
+    last = -1
+    checks = [
+        e9.iloc[last] > e21.iloc[last], e21.iloc[last] > e50.iloc[last],
+        e50.iloc[last] > e200.iloc[last], c.iloc[last] > c.rolling(20).mean().iloc[last],
+        c.iloc[last] > c.rolling(50).mean().iloc[last], rsi.iloc[last] > 50,
+        hist.iloc[last] > 0, c.pct_change(9).iloc[last] > 0,
+        len(c) > 11 and c.iloc[last] > c.iloc[-11], sto.iloc[last] > 50,
+    ]
+    return sum(1 for x in checks if bool(x) is True)
+
+
+def market_breadth(closes_by_sym: Dict[str, List[float]], bull_min: int) -> float:
+    """Fraction of the universe that is broadly bullish (bull_score >= bull_min)."""
+    scores = [bull_score_last(c) for c in closes_by_sym.values() if c]
+    return (sum(1 for s in scores if s >= bull_min) / len(scores)) if scores else 0.0
+
+
 # --------------------------------------------------------------------------- #
 # State
 # --------------------------------------------------------------------------- #
@@ -104,7 +138,9 @@ def _write_heartbeat(extra: dict) -> None:
 # --------------------------------------------------------------------------- #
 async def _fetch_universe_closes(universe: List[str], lookback: int, skip: int):
     """Returns (closes_by_sym, latest_candle_ms). Illiquid/missing pairs drop out."""
-    need = lookback + skip + 5
+    # Need enough history for both momentum (lookback) and the regime bull-score
+    # (up to a 200-bar EMA), so fetch a generous fixed minimum.
+    need = max(lookback + skip + 5, 220)
     sem = asyncio.Semaphore(6)
 
     async def one(sym):
@@ -136,11 +172,16 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
     size_total = float(strategy.get("position_size_r", 0.3))
     costs = strategy.get("costs", {}) or {}
     cost = (float(costs.get("fees_bps", 10.0)) + float(costs.get("slippage_bps", 5.0))) / 1e4
+    # Regime gate: only hold the momentum book when the market is broadly bullish,
+    # else go to cash. Validated to lift OOS Sharpe ~0.3->1.6 and cut maxDD ~48%->9%.
+    regime_gate = bool(e.get("regime_gate", False))
+    breadth_thr = float(e.get("breadth_threshold", 0.4))
+    bull_min = int(e.get("breadth_bull_min", 6))
 
     rprint(f"[bold green]Booting hermes-trading worker[/] · xsmom portfolio · paper mode")
     rprint(f"[dim]{len(universe)} coins · lookback{lookback}d skip{skip} "
            f"rebal{rebal_days}d top{k}/side {'long-short' if allow_short else 'long-only'} "
-           f"size{size_total}[/]")
+           f"size{size_total}{' · regime-gate ' + str(breadth_thr) if regime_gate else ''}[/]")
 
     consecutive_failures = 0
     tick = 0
@@ -159,11 +200,17 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
                 if st["weights"]:
                     pnl = rebalance_pnl(st["weights"], st["entry_px"], now_px)
                     st["equity"] *= (1.0 + pnl)
-                # 2) Form the new book and charge turnover cost.
-                mom = momentum(closes, lookback, skip)
-                new_w = target_weights(mom, k, allow_short, size_total)
-                if not new_w:
-                    raise RuntimeError("could not form target book (insufficient ranked coins)")
+                # 2) Regime gate: if the tape isn't broadly bullish, go to CASH.
+                breadth = market_breadth(closes, bull_min) if regime_gate else 1.0
+                flat = regime_gate and breadth < breadth_thr
+                # 3) Form the new book (empty = cash) and charge turnover cost.
+                if flat:
+                    new_w = {}
+                else:
+                    mom = momentum(closes, lookback, skip)
+                    new_w = target_weights(mom, k, allow_short, size_total)
+                    if not new_w:
+                        raise RuntimeError("could not form target book (insufficient ranked coins)")
                 turn = turnover(st["weights"], new_w)
                 st["equity"] *= (1.0 - turn * cost)
                 longs = sorted([s for s, w in new_w.items() if w > 0])
@@ -175,9 +222,14 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
                 _save_state(st)
                 event = {"ts": time.time(), "equity": round(st["equity"], 5),
                          "rebalance": st["rebalances"], "longs": longs, "shorts": shorts,
-                         "turnover": round(turn, 3)}
-                rprint(f"[cyan]REBALANCE #{st['rebalances']}[/] equity={st['equity']:.4f} "
-                       f"long={longs} short={shorts}")
+                         "turnover": round(turn, 3), "breadth": round(breadth, 2),
+                         "regime": "CASH" if flat else "invested"}
+                if flat:
+                    rprint(f"[yellow]REBALANCE #{st['rebalances']} → CASH[/] "
+                           f"(breadth {breadth:.0%} < {breadth_thr:.0%}) equity={st['equity']:.4f}")
+                else:
+                    rprint(f"[cyan]REBALANCE #{st['rebalances']}[/] equity={st['equity']:.4f} "
+                           f"breadth={breadth:.0%} long={longs} short={shorts}")
                 print("REBALANCE_JSON " + json.dumps(event), flush=True)
             else:
                 # Mark-to-market: the book trades weekly but its value moves every
