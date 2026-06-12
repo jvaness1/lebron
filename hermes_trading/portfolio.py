@@ -230,6 +230,15 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
            f"rebal{rebal_days}d top{k}/side {'long-short' if allow_short else 'long-only'} "
            f"size{size_total}{' · regime-gate ' + str(breadth_thr) if regime_gate else ''}[/]")
 
+    # If the strategy was switched to long-only but the persisted book still holds
+    # shorts (from a prior long-short config), drop them and rebalance fresh — don't
+    # carry untradeable positions.
+    _st0 = _load_state()
+    if (not allow_short) and any(w < 0 for w in _st0.get("weights", {}).values()):
+        _st0["weights"] = {}; _st0["entry_px"] = {}; _st0["last_rebalance_ms"] = 0
+        _save_state(_st0)
+        rprint("[yellow]switched to long-only — cleared stale short positions; rebalancing fresh[/]")
+
     consecutive_failures = 0
     tick = 0
     while max_ticks is None or tick < max_ticks:
