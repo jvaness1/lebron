@@ -5,6 +5,23 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · P2/P4/P5/P0b · improvement sweep (interactive, LOCAL data)
+OOS ~479d single split, 23 coins (only 23 of top-40 had 600+d history). Baseline
+(live: 30d/K5/weekly/breadth-gate) = +78% / Sharpe 1.62 / DD 19.2%. Each variant
+changes ONE thing (scripts/improve_sweep.py):
+  +vol-scaled sizing (P2): +41%/1.22 — WORSE
+  +skip 7d (P5):           +26%/0.79 — WORSE
+  +wider universe 40 (P4): identical (only 23 coins had history) — INCONCLUSIVE
+  +BTC-trend gate (P0b):   +116%/1.63/20.4% — Sharpe tie, more return; marginal, single-window
+  +lookback 60:            -12%/-0.17 — WORSE (30d better)
+  +K=8:                    +52%/1.74/13.6% — higher Sharpe + lower DD, lower return; tradeoff
+  +no gate (ref):          +321%/2.03/30.3% — higher this window but crash-exposed (walk-forward s5)
+VERDICT: NO variant robustly beats live. vol-sizing/skip/longer-lookback hurt;
+BTC-gate & K=8 are within-noise tradeoffs not clear wins; wider universe inconclusive
+(data-limited, overlaps P6). The live config is at the practical optimum findable on
+~3yr of data. DEPLOY NOTHING — more single-window tweaking = overfitting. IMPROVEMENT
+SEARCH EXHAUSTED; binding constraint is now live forward-proof (TIME), not backtesting.
+
 ## 2026-06-11 · P0a · REAL walk-forward of the regime gate (interactive, LOCAL data)
 Redone on real KuCoin daily (the cloud agent could only use SYNTHETIC data — its
 sandbox blocks all exchange APIs with 403 "host not in allowlist"). 5 sequential
