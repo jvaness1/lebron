@@ -24,7 +24,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       the regime gate instead of universe breadth; do they match/beat breadth, and are
       they less correlated to the book? Does any regime gate also rescue the daily-frame
       variant (P1)?
-- [ ] **P1 — Validate the daily-frame variant properly.** A test-set search hinted
+- [x] **P1 — Daily-frame variant.** DONE (LOG): honest train→test = WORSE than weekly (Sharpe 0.45 vs 1.62, DD 38% vs 19%). The +179% was in-sample luck. KILLED. orig: A test-set search hinted
       daily-rebalance + 14d lookback + K3 → +179% / Sharpe 1.42 OOS, BUT that was
       in-sample-selected. Do it right: pick the best (lookback, K) on TRAIN only,
       evaluate on TEST; run 5-slice walk-forward; map the parameter neighbourhood

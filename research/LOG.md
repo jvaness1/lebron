@@ -5,6 +5,18 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · P1 · daily-frame variant, done HONESTLY (interactive, LOCAL data)
+Train-selected best daily config = lookback7/K2/gate (train Sharpe only 0.49 — weak
+even in-sample). TEST OOS: +14.0% / Sharpe 0.45 / maxDD 38.2% (472 daily rebalances)
+vs live WEEKLY +78.0% / Sharpe 1.62 / maxDD 19.2%. Walk-forward: daily beats weekly
+3/5 slices but wildly inconsistent (-29%, +0.4%, +98%, +35%, -15.5%) at ~2x the DD.
+VERDICT: daily-frame is WORSE — lower Sharpe, lower return, higher DD. The earlier
+"+179%/1.42" was pure IN-SAMPLE SELECTION (test-set fitting). KILLED. Weekly wins
+decisively. scripts/p1_daily.py.
+=> With P1 killed, the IMPROVEMENT SEARCH IS EXHAUSTED. Live config (xsmom 30d/K5/
+weekly/breadth-gate/size0.3) is the best findable on ~3yr data. Nothing left to deploy;
+binding constraint is now live forward-proof (TIME).
+
 ## 2026-06-11 · P2/P4/P5/P0b · improvement sweep (interactive, LOCAL data)
 OOS ~479d single split, 23 coins (only 23 of top-40 had 600+d history). Baseline
 (live: 30d/K5/weekly/breadth-gate) = +78% / Sharpe 1.62 / DD 19.2%. Each variant
