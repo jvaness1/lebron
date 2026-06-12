@@ -5,6 +5,24 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-11 · LONG-ONLY US-spot strategy — dual momentum (interactive, LOCAL data)
+User is US (no perps → can't short), so designed the spot-tradeable long-only version.
+Plain long-only momentum: real but ~43% DD. Fixes tested (scripts/longonly_design.py,
+OOS ~479d, 23 coins, weekly K5):
+  plain long-only:            +178% / CAGR 130% / Sharpe 1.42 / DD 43.5%
+  +abs-mom (own ret>0):       +210% / Sharpe 1.56 / DD 30.0%
+  +TREND filter (px>100d MA): +169% / Sharpe 1.53 / DD 21.8%  ← CHOSEN
+  +BTC-regime gate:           +59%  / Sharpe 0.94 / DD 19.7% (too conservative)
+  benchmarks: equal-weight hold -27%, BTC hold -33% (so all beat just-holding).
+Walk-forward (trend vs plain, 5 slices): trend cut DD in 3/5; huge help in worst slice
+(s5 DD 42%→22%, Sharpe -1.81→-0.60); slightly lags plain in calm bull slices. So the
+trend filter is CRASH PROTECTION — halves full-window DD (43%→22%) for a small upside
+cost. DEPLOYED as LIVE (strategy.yaml v04: long-only, trend_filter px>100d MA, K5/30d/
+weekly, size 1.0). Long-short kept at strategy.xsmom.yaml for research. This is the only
+version a US user could actually trade (spot). CAVEATS: CAGRs window-inflated (one ~16mo
+OOS, survivors-only), regime-dependent, needs live forward proof. Resolves P7a (long-only
+risk control); funding cost moot for spot (no perps).
+
 ## 2026-06-11 · P1 · daily-frame variant, done HONESTLY (interactive, LOCAL data)
 Train-selected best daily config = lookback7/K2/gate (train Sharpe only 0.49 — weak
 even in-sample). TEST OOS: +14.0% / Sharpe 0.45 / maxDD 38.2% (472 daily rebalances)

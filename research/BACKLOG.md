@@ -45,7 +45,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       is real (+47% vs benchmark -31%) but mediocre (Sharpe ~0.8, ~46% DD); the breadth
       gate HURTS long-only (it's long-short-specific). Spot real-money path is viable
       but weak and needs its own risk control. Follow-up P7a below.
-- [ ] **P7a — Long-only risk control + funding cost.** Design a long-only-appropriate
+- [x] **P7a — Long-only risk control.** DONE (LOG): per-coin TREND filter (px>100d MA, dual momentum) halves long-only DD 43%→22%, kept Sharpe ~1.5. DEPLOYED as live US-spot strategy v04. Funding moot for spot. orig: Design a long-only-appropriate
       risk control (trailing stop / vol-target / BTC-trend gate) to tame the ~46% DD,
       and quantify perp FUNDING cost so we know if live long-short net-of-funding still
       beats spot long-only (decides the real-money execution path: perps vs spot).
