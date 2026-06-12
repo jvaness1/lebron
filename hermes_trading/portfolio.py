@@ -64,6 +64,25 @@ def target_weights(mom: Dict[str, float], k: int, allow_short: bool,
     return weights
 
 
+def longonly_trend_weights(mom: Dict[str, float], closes_by_sym: Dict[str, List[float]],
+                           k: int, size_total: float, trend_ma_days: int) -> Dict[str, float]:
+    """LONG-ONLY dual momentum (US-spot tradeable): take the top-k by momentum, but
+    only hold a coin if it's ALSO above its own trend MA (else that slot stays cash).
+    In a broad downtrend few coins qualify => mostly cash => big drawdown reduction."""
+    if len(mom) < k:
+        return {}
+    top = [s for s, _ in sorted(mom.items(), key=lambda kv: kv[1])[-k:]]
+    w = {}
+    for s in top:
+        ok = True
+        if trend_ma_days:
+            c = closes_by_sym.get(s, [])
+            ok = len(c) >= trend_ma_days and c[-1] > sum(c[-trend_ma_days:]) / trend_ma_days
+        if ok:
+            w[s] = size_total / k   # else: cash for this slot
+    return w
+
+
 def rebalance_pnl(weights: Dict[str, float], entry_px: Dict[str, float],
                   now_px: Dict[str, float]) -> float:
     """Portfolio return earned by the held book since entry (pre-cost)."""
@@ -196,6 +215,10 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
     regime_gate = bool(e.get("regime_gate", False))
     breadth_thr = float(e.get("breadth_threshold", 0.4))
     bull_min = int(e.get("breadth_bull_min", 6))
+    # Long-only dual-momentum (US-spot path): top-k longs filtered by their own trend;
+    # non-qualifying slots go to cash. Replaces the (long-short-specific) breadth gate.
+    trend_filter = bool(e.get("trend_filter", False))
+    trend_ma_days = int(e.get("trend_ma_days", 100))
     # Circuit breaker: if marked equity falls this far below its high-water mark,
     # emergency-flatten to cash and HALT until manually reset (delete portfolio.json
     # or set "halted": false). A backstop for "the strategy itself broke", separate
@@ -254,9 +277,13 @@ async def run_xsmom_live(strategy: dict, interval: float = 3600.0,
                     new_w = {}
                 else:
                     mom = momentum(closes, lookback, skip)
-                    new_w = target_weights(mom, k, allow_short, size_total)
-                    if not new_w:
-                        raise RuntimeError("could not form target book (insufficient ranked coins)")
+                    if not allow_short and trend_filter:
+                        new_w = longonly_trend_weights(mom, closes, k, size_total, trend_ma_days)
+                        # empty here is VALID = all slots in cash (broad downtrend)
+                    else:
+                        new_w = target_weights(mom, k, allow_short, size_total)
+                        if not new_w:
+                            raise RuntimeError("could not form target book (insufficient ranked coins)")
                 turn = turnover(st["weights"], new_w)
                 st["equity"] *= (1.0 - turn * cost)
                 longs = sorted([s for s, w in new_w.items() if w > 0])

@@ -54,6 +54,20 @@ def test_bull_score_uptrend_vs_downtrend():
     assert pf.bull_score_last([1, 2, 3]) == 0    # too little history → 0
 
 
+def test_longonly_trend_weights():
+    mom = {"a": 0.5, "b": 0.4, "c": 0.3, "d": -0.1}      # a,b,c are top-3
+    up = [100 + i for i in range(120)]                    # above its 100d MA → qualifies
+    down = [200 - i for i in range(120)]                  # below its 100d MA → cash
+    closes = {"a": up, "b": down, "c": up, "d": up}
+    w = pf.longonly_trend_weights(mom, closes, k=3, size_total=1.0, trend_ma_days=100)
+    assert set(w) == {"a", "c"}                           # b dropped (downtrend) → its slot is cash
+    assert all(v > 0 for v in w.values())                 # long-only, no negatives
+    assert abs(w["a"] - 1/3) < 1e-9                       # slot size = size/k even though b is cash
+    # no trend filter (trend_ma_days=0) → plain top-k longs
+    w2 = pf.longonly_trend_weights(mom, closes, k=3, size_total=1.0, trend_ma_days=0)
+    assert set(w2) == {"a", "b", "c"}
+
+
 def test_drawdown_frac():
     assert pf.drawdown_frac(1.0, 1.0) == 0.0          # at the high-water mark
     assert pf.drawdown_frac(1.0, 1.2) == 0.0          # new high → no drawdown
