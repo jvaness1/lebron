@@ -5,6 +5,25 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-12 · P3 · regime-gate rescue/drag decomposition (CORRECTED) (interactive)
+Cloud bot proposed a P3 finding but its headline ("higher aggregate return WITH gate,
+514% vs 321%") compared MISMATCHED windows (full-period gate vs test-half no-gate) —
+WRONG. Reproduced on real KuCoin, matched windows (scripts/p3_regime_rescue.py),
+long-short, 5 slices:
+  drag in the 4 winning slices: -188.5pp total (gate underperforms no-gate every one)
+  rescue in the 1 crash slice (s5): +33.9pp (nogate -48.6% → gate -14.7%)
+  AGGREGATE compounded (matched): gate +248% vs NO-GATE +925% → gate is LOWER.
+VERDICT: the regime gate REDUCES both return and Sharpe; its ONLY benefit is lower
+drawdown (crash avoidance). It is pure insurance with a STEEP return premium, NOT a
+return booster. (This also corrects the rosy single-split P0 0.31→1.61, which was
+flattered by that split's baseline eating the crash.) Consistent with improve_sweep
+(no-gate test-half +321%/Sharpe2.03 > gated +78%/1.62). P3 RESOLVED.
+IMPLICATION: live strategy is LONG-ONLY (gate OFF, trend filter instead) so this
+doesn't change the deployment. For the long-short RESEARCH book, the gate is optional
+insurance — keep only if you value the drawdown cut more than the large return give-up.
+NOTE: cloud bot can meta-analyse logged results without market data, but it made a
+window-matching error AND still can't push — its output must be verified before landing.
+
 ## 2026-06-11 · LONG-ONLY US-spot strategy — dual momentum (interactive, LOCAL data)
 User is US (no perps → can't short), so designed the spot-tradeable long-only version.
 Plain long-only momentum: real but ~43% DD. Fixes tested (scripts/longonly_design.py,

@@ -32,7 +32,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       yes, write state/strategy.xsmom_daily.yaml + note how to run it.
 - [x] **P2 — Volatility-scaled sizing.** DONE (LOG): WORSE than equal-weight (Sharpe 1.62→1.22). Skipped. orig: Replace fixed per-name weight with
       inverse-vol (or vol-target) weights. Does it raise Sharpe / cut the ~50% DD?
-- [ ] **P3 — Regime filter.** Gate the book on a market-breadth / BTC-trend signal
+- [x] **P3 — Regime filter.** DONE (LOG 2026-06-12, CORRECTED vs cloud-bot's mismatched-window claim): gate is pure drawdown insurance with a steep return premium (drag -188pp in winning slices vs +34pp crash rescue; aggregate gate +248% < no-gate +925%), NOT a return booster. Live is long-only (gate off) so no change. orig: Gate the book on a market-breadth / BTC-trend signal
       (e.g. only deploy when >50% of universe is above its 50d MA). Does it remove
       the losing walk-forward slices without killing total return?
 - [~] **P4 — Wider universe (40–60 coins).** INCONCLUSIVE: only 23 of 40 had history (overlaps P6). orig: Does more breadth improve the
