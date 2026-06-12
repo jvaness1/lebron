@@ -20,7 +20,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       it's DRAWDOWN PROTECTION (wins in crashes, lags in rallies), NOT a return booster.
       Active-period Sharpe 2.75 → momentum edge is real (not a cash artifact). Gate kept
       live as a risk/return tradeoff. The single-split P0 overstated it.
-- [ ] **P0b — Alternative regime signals.** Test BTC>200d-MA and BTC 30d-return>0 as
+- [x] **P0b — Alternative regime signals.** DONE: BTC-trend gate ~ties breadth (1.63 vs 1.62); kept breadth. orig: Test BTC>200d-MA and BTC 30d-return>0 as
       the regime gate instead of universe breadth; do they match/beat breadth, and are
       they less correlated to the book? Does any regime gate also rescue the daily-frame
       variant (P1)?
@@ -30,14 +30,14 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       evaluate on TEST; run 5-slice walk-forward; map the parameter neighbourhood
       (lookback 7–21, K 2–4, daily). Verdict: is a daily-frame bot deployable? If
       yes, write state/strategy.xsmom_daily.yaml + note how to run it.
-- [ ] **P2 — Volatility-scaled sizing.** Replace fixed per-name weight with
+- [x] **P2 — Volatility-scaled sizing.** DONE (LOG): WORSE than equal-weight (Sharpe 1.62→1.22). Skipped. orig: Replace fixed per-name weight with
       inverse-vol (or vol-target) weights. Does it raise Sharpe / cut the ~50% DD?
 - [ ] **P3 — Regime filter.** Gate the book on a market-breadth / BTC-trend signal
       (e.g. only deploy when >50% of universe is above its 50d MA). Does it remove
       the losing walk-forward slices without killing total return?
-- [ ] **P4 — Wider universe (40–60 coins).** Does more breadth improve the
+- [~] **P4 — Wider universe (40–60 coins).** INCONCLUSIVE: only 23 of 40 had history (overlaps P6). orig: Does more breadth improve the
       cross-sectional spread, or just add illiquid noise? Report with a volume floor.
-- [ ] **P5 — Skip-period momentum.** Add a 3–7d skip (rank on return excluding the
+- [x] **P5 — Skip-period momentum.** DONE: skip 7d WORSE (1.62→0.79). Skipped. orig: Add a 3–7d skip (rank on return excluding the
       most recent days) to dodge short-term reversal. Better OOS?
 - [ ] **P6 — Longer history for majors.** Pull max KuCoin daily for the longest-lived
       coins; re-test on a longer, multi-regime window to shrink sample-size risk.
