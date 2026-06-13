@@ -54,6 +54,19 @@ def test_bull_score_uptrend_vs_downtrend():
     assert pf.bull_score_last([1, 2, 3]) == 0    # too little history → 0
 
 
+def test_momentum_multi():
+    # coin A: steady uptrend; multi-horizon avg of 14/30/60d returns should be positive
+    a = [100 + i for i in range(70)]
+    b = [100 - i * 0.2 for i in range(70)]      # mild downtrend → negative
+    out = pf.momentum_multi({"A": a, "B": b}, lookbacks=[14, 30, 60], skip=0)
+    assert out["A"] > 0 > out["B"]
+    # not enough history for the 60d horizon → coin excluded
+    assert "C" not in pf.momentum_multi({"C": [1, 2, 3]}, [14, 30, 60], 0)
+    # equals the average of the individual-horizon returns
+    exp = sum(a[-1] / a[-(lb + 1)] - 1 for lb in (14, 30, 60)) / 3
+    assert abs(out["A"] - exp) < 1e-9
+
+
 def test_longonly_trend_weights():
     mom = {"a": 0.5, "b": 0.4, "c": 0.3, "d": -0.1}      # a,b,c are top-3
     up = [100 + i for i in range(120)]                    # above its 100d MA → qualifies
