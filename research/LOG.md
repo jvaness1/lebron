@@ -5,6 +5,20 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-12 · IMPROVEMENT FOUND — multi-horizon momentum (interactive, LOCAL data)
+Tested alternative SELECTION signals for the long-only strategy (scripts/factor_research.py),
+not just param tweaks. Single 60/40 OOS + 5-slice walk-forward, long-only K5 trend-filtered:
+  raw 30d (live):        +52% / Sharpe 0.88 / DD 38.5%  (walk-fwd baseline)
+  risk-adjusted mom:     +70% / 1.06 / 40.6%  (beats raw 2/5 slices)
+  MULTI-HORIZON 14/30/60:+92% / 1.17 / 26.9%  (beats raw 4/5 slices)  ← WINNER
+  momentum + low-vol:    +24% / 0.71 / 17.3%  (beats raw 0/5 — bad)
+Multi-horizon (rank by AVERAGE of 14/30/60d returns) beats raw single-30d in 4/5
+walk-forward slices, higher Sharpe AND lower DD, positive in EVERY slice incl. the
+worst (1.05 vs 0.31). Mechanism sound (averaging timeframes picks consistent momentum,
+ignores single-window noise — documented robustness gain). DEPLOYED: strategy.yaml v05,
+entry.momentum_lookbacks [14,30,60]; engine momentum_multi(). First robust improvement
+since the regime gate. CAVEAT: same ~3yr survivors data; real test is live forward.
+
 ## 2026-06-12 · P3 · regime-gate rescue/drag decomposition (CORRECTED) (interactive)
 Cloud bot proposed a P3 finding but its headline ("higher aggregate return WITH gate,
 514% vs 321%") compared MISMATCHED windows (full-period gate vs test-half no-gate) —
