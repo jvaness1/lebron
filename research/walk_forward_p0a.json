@@ -4,58 +4,58 @@
     {
       "fold": 0,
       "chosen_threshold": 0.3,
-      "train_sharpe": 0.0,
-      "test_sharpe": 0.0,
-      "test_mdd": 0.0,
-      "test_total": 0.0,
-      "active_pct": 0.0,
-      "rebalances": 0
+      "train_sharpe": 0.15529885609866187,
+      "test_sharpe": 2.835388590071237,
+      "test_mdd": 0.02618222333340073,
+      "test_total": 14.97273435272617,
+      "active_pct": 0.5882352941176471,
+      "rebalances": 10
     },
     {
       "fold": 1,
       "chosen_threshold": 0.3,
-      "train_sharpe": 0.0,
-      "test_sharpe": 0.0,
-      "test_mdd": 0.0,
-      "test_total": 0.0,
-      "active_pct": 0.0,
-      "rebalances": 0
+      "train_sharpe": 0.7661502115540202,
+      "test_sharpe": 2.0404258938786834,
+      "test_mdd": 0.0036147596348316264,
+      "test_total": 1.1454357473221988,
+      "active_pct": 0.23529411764705882,
+      "rebalances": 4
     },
     {
       "fold": 2,
       "chosen_threshold": 0.3,
-      "train_sharpe": 0.0,
-      "test_sharpe": 0.0,
-      "test_mdd": 0.0,
-      "test_total": 0.0,
-      "active_pct": 0.0,
-      "rebalances": 0
+      "train_sharpe": 0.7445215287955925,
+      "test_sharpe": 0.4174776090882463,
+      "test_mdd": 0.0481512780736467,
+      "test_total": 1.1078391708593038,
+      "active_pct": 0.6470588235294118,
+      "rebalances": 11
     },
     {
       "fold": 3,
       "chosen_threshold": 0.3,
-      "train_sharpe": 0.0,
-      "test_sharpe": 0.0,
-      "test_mdd": 0.0,
-      "test_total": 0.0,
-      "active_pct": 0.0,
-      "rebalances": 0
+      "train_sharpe": 0.7093625061129568,
+      "test_sharpe": 1.954130914665477,
+      "test_mdd": 0.0009000000000000341,
+      "test_total": 1.5625836085872535,
+      "active_pct": 0.17647058823529413,
+      "rebalances": 3
     },
     {
       "fold": 4,
       "chosen_threshold": 0.3,
-      "train_sharpe": 0.0,
-      "test_sharpe": 0.0,
-      "test_mdd": 0.0,
-      "test_total": 0.0,
-      "active_pct": 0.0,
-      "rebalances": 0
+      "train_sharpe": 0.7442988006836793,
+      "test_sharpe": 1.6814706601508667,
+      "test_mdd": 0.009168201350741256,
+      "test_total": 3.8103207892857816,
+      "active_pct": 0.4117647058823529,
+      "rebalances": 7
     }
   ],
   "aggregate": {
-    "sharpe": 0.0,
-    "mdd": 0.0,
-    "total": 0.0,
+    "sharpe": 1.545340874640301,
+    "mdd": 0.048151278073646615,
+    "total": 23.965333207771412,
     "steps": 86,
     "active": 86
   }

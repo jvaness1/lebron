@@ -197,3 +197,38 @@ alternative regime signal; does the gate also rescue the daily-frame variant (P1
   costs); Donchian 1h breakout (worked on SOL, did NOT generalise — 43% of coins
   positive, equal-weight ~flat); all intraday/HF strategies (killed by taker fees;
   only viable at maker ≤~3bps/side).
+
+## 2026-06-15 · HEALTHCHECK (deterministic, automated)
+
+Live config: # above their 100d MA (dual momentum), else cash. Weekly rebalance. ~halves drawdown vs   indicator: xsmom   lookback_days: 30   momentum_lookbacks: [14, 30, 60]   top_k: 5   trend_ma_days: 100 rebalance_days: 7 risk: 
+
+```
+### drift: live realised vs backtest (same dates)
+
+Live equity points logged: 1
+Not enough live history yet (need ≥3 rebalances). The bot logs one per
+weekly rebalance — check back after a few weeks of live paper running.
+Latest: equity=0.9988 regime=invested
+
+### edge persistence: xsmom walk-forward
+WFV P0a · xsmom + breadth-regime gate
+panel 22x1200 1199d
+
+-- fold results --
+fold  thr    trainSH   OOS SH    maxDD     ret%  active%
+0     0.3       0.16     2.84     2.6%    +15.0%      59%
+1     0.3       0.77     2.04     0.4%     +1.1%      24%
+2     0.3       0.74     0.42     4.8%     +1.1%      65%
+3     0.3       0.71     1.95     0.1%     +1.6%      18%
+4     0.3       0.74     1.68     0.9%     +3.8%      41%
+
+-- walk-forward aggregate --
+  OOS Sharpe: 1.55
+  maxDD:      4.8%
+  total ret:  +24.0%
+  active ~    41% of the time
+  folds:      5
+
+wrote /Users/jamesvaness/hermes-trading/research/walk_forward_p0a.json
+```
+
