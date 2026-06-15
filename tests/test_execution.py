@@ -67,6 +67,7 @@ def test_rebalance_sell_then_buy():
 
 
 def test_broker_defaults_to_dryrun_without_keys(monkeypatch):
+    monkeypatch.setattr("hermes_trading.execution._load_env_file", lambda: None)  # ignore real .env
     monkeypatch.delenv("COINBASE_API_KEY", raising=False)
     monkeypatch.delenv("COINBASE_API_SECRET", raising=False)
     b = CoinbaseBroker(live=True)              # asked for live...
@@ -75,6 +76,7 @@ def test_broker_defaults_to_dryrun_without_keys(monkeypatch):
 
 
 def test_broker_execute_dryrun_places_nothing(monkeypatch):
+    monkeypatch.setattr("hermes_trading.execution._load_env_file", lambda: None)
     monkeypatch.delenv("COINBASE_API_KEY", raising=False)
     monkeypatch.delenv("COINBASE_API_SECRET", raising=False)
     b = CoinbaseBroker(live=False)

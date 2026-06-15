@@ -39,7 +39,7 @@ async def target_weights_now(strategy: dict) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(prog="hermes_trading.execute")
     ap.add_argument("--live", action="store_true", help="place REAL orders (needs Coinbase keys)")
-    ap.add_argument("--quote", default="USD")
+    ap.add_argument("--quote", default="USDC")   # Coinbase holds trading cash as USDC
     ap.add_argument("--max-order", type=float, default=50.0, help="max USD per order")
     ap.add_argument("--max-total", type=float, default=200.0, help="max USD deployed total")
     ap.add_argument("--min-order", type=float, default=1.0, help="min USD per order")

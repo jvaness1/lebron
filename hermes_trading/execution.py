@@ -19,7 +19,24 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional
+
+
+def _load_env_file() -> None:
+    """Load COINBASE_* secrets from a gitignored .env (so keys never live in the
+    shell history or this chat). Only sets vars that aren't already in the env."""
+    envp = Path(__file__).resolve().parent.parent / ".env"
+    if not envp.exists():
+        return
+    for line in envp.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, _, v = line.partition("=")
+        k, v = k.strip(), v.strip().strip('"').strip("'")
+        if k and k not in os.environ:
+            os.environ[k] = v.replace("\\n", "\n")   # restore PEM newlines
 
 
 # --------------------------------------------------------------------------- #
@@ -88,14 +105,17 @@ def reconcile(target_weights: Dict[str, float], holdings_usd: Dict[str, float],
 # Coinbase broker — reads the real account, places (or simulates) orders
 # --------------------------------------------------------------------------- #
 class CoinbaseBroker:
-    def __init__(self, *, quote: str = "USD", live: bool = False,
+    def __init__(self, *, quote: str = "USDC", live: bool = False,
                  max_order_usd: float = 50.0, max_total_usd: float = 200.0,
                  min_order_usd: float = 1.0):
         self.quote = quote
         self.max_order_usd = float(max_order_usd)
         self.max_total_usd = float(max_total_usd)
         self.min_order_usd = float(min_order_usd)
+        _load_env_file()
         key, secret = os.getenv("COINBASE_API_KEY"), os.getenv("COINBASE_API_SECRET")
+        if secret:
+            secret = secret.replace("\\n", "\n")   # CDP EC keys: restore real newlines
         self.has_keys = bool(key and secret)
         # LIVE only if explicitly asked AND keys exist — otherwise force dry-run.
         self.live = bool(live and self.has_keys)
