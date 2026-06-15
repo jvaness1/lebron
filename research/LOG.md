@@ -5,6 +5,21 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-15 · P4 + Coinbase universe — EXPANDED 24→36, DEPLOYED (interactive)
+User is US → will trade on Coinbase, so universe MUST be Coinbase-listed. Built Coinbase
+universe via ccxt (coinbase lists 400 spot bases); 23/24 current coins are on Coinbase
+(only TRX isn't; BNB also dropped — not Coinbase-US retail). Expanded to liquid Coinbase
+coins with history (memecoins excluded for slippage). scripts/coinbase_universe.py.
+EXPANSION HELPS ROBUSTLY (multi-horizon long-only, OOS): 17 coins Sharpe 0.32 → 20 coins
+0.98 → 33 coins 1.17; walk-forward expanded beats current in 4/5 slices (higher Sharpe
+nearly every window). Mechanism sound: more breadth → genuinely stronger top-5 in cross-
+sectional momentum. DEPLOYED strategy.yaml v06: 36 Coinbase-tradeable coins. Resolves P4
+(wider universe — earlier "inconclusive" was KuCoin-history-limited; the Coinbase set has
+breadth). NOTE for real trading: switch pairs to /USD + EXCHANGE_ID=coinbase and verify
+each coin is enabled in the user's Coinbase account. Caveat: memecoins (SHIB/PEPE) kept as
+liquid Coinbase names but carry higher slippage; expansion benefit partly window-dependent
+but robust across walk-forward.
+
 ## 2026-06-15 · P6 · longer-history test — DATA-PIPELINE BLOCKED (interactive)
 Attempted to validate the live long-only config on a longer multi-cycle window
 (scripts/p6_longer_history.py). BLOCKED: fetching total=3000 daily × 60 coins rate-

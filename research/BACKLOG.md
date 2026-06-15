@@ -35,7 +35,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
 - [x] **P3 — Regime filter.** DONE (LOG 2026-06-12, CORRECTED vs cloud-bot's mismatched-window claim): gate is pure drawdown insurance with a steep return premium (drag -188pp in winning slices vs +34pp crash rescue; aggregate gate +248% < no-gate +925%), NOT a return booster. Live is long-only (gate off) so no change. orig: Gate the book on a market-breadth / BTC-trend signal
       (e.g. only deploy when >50% of universe is above its 50d MA). Does it remove
       the losing walk-forward slices without killing total return?
-- [~] **P4 — Wider universe (40–60 coins).** INCONCLUSIVE: only 23 of 40 had history (overlaps P6). orig: Does more breadth improve the
+- [x] **P4 — Wider universe.** DONE (LOG 2026-06-15): expanded to 36 Coinbase-tradeable coins; robustly beats the old 24 (4/5 walk-forward, Sharpe up). Deployed v06. orig: INCONCLUSIVE: only 23 of 40 had history (overlaps P6). orig: Does more breadth improve the
       cross-sectional spread, or just add illiquid noise? Report with a volume floor.
 - [x] **P5 — Skip-period momentum.** DONE: skip 7d WORSE (1.62→0.79). Skipped. orig: Add a 3–7d skip (rank on return excluding the
       most recent days) to dodge short-term reversal. Better OOS?
