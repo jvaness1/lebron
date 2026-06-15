@@ -5,6 +5,39 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-15 · P8 · cost/turnover sensitivity of the LIVE config — EDGE IS COST-ROBUST
+Why this matters: strategy.yaml assumes 15bps/side, but the real Coinbase deploy cost
+~1.14% (entry-only ≈ ~57bps/side) — ~4x the backtest assumption. So the live question is
+whether the edge is an artifact of an optimistic cost model. Tested the EXACT live config
+(multi-horizon 14/30/60, K5, weekly, long-only, 100d-MA trend filter) on the EXACT live
+36-coin universe (all 36 had history). scripts/p8_cost_sensitivity.py. Honest OOS (test
+half, ~479d) + 5-slice walk-forward. Key lever measured directly: TURNOVER.
+  cost/side:   0bp -> 15bp -> 60bp -> 80bp
+  net%:      84.8%   78.0%   59.0%   51.2%
+  Sharpe:     1.09    1.04    0.91    0.85
+  maxDD:     30.5%   31.0%   32.8%   33.5%
+  avg turnover/rebalance: 0.424x (cost-independent; ~1 of 5 names churns per week)
+  mean gross return / rebalance: 1.523%
+  ANALYTIC break-even cost/side (mean net per-rebal = 0): ~359 bps/side (3.6%/side)
+  walk-forward @15bps: Sharpe [0.61,1.97,2.21,1.51,1.31] positive 5/5
+  walk-forward @60bps: Sharpe [0.46,1.87,2.09,1.33,1.17] positive 5/5
+VERDICT: the edge is NOT fragile to the cost assumption. Mechanism: weekly multi-horizon
+momentum is LOW-TURNOVER (~0.42x round-trip/week — names persist in the top-5), so even
+at 4x the assumed cost the drag is small. Break-even is ~3.6%/side — costs would have to
+be ~24x the backtest assumption (or ~6x the observed Coinbase retail rate) to erase the
+edge. Survives 5/5 walk-forward slices at both 15bps and a pessimistic 60bps. This
+materially raises confidence in the REAL-MONEY Coinbase deployment: the ~1.14% observed
+deploy cost is well inside the safety margin. NO config change (live config already
+survives) → no candidate written. P8 RESOLVED (positive).
+CAVEATS: (1) break-even is mean-based (mean net per-rebal=0); the walk-forward 5/5 is the
+robustness proof, not the point estimate. (2) Same survivors-only ~3yr / one-OOS-window
+basis (sample-size caveat from P6 stands). (3) memecoins (SHIB/PEPE) in the universe carry
+worse real slippage than the uniform 60bps models — at $20-25/order this is modest but is
+the main place the cost model could understate reality; turnover into those specific names
+is the thing to watch live. (4) Coinbase Advanced-Trade fees DROP with volume, so 60bps is
+conservative as the book scales.
+FOLLOW-UP added: P8a — per-coin slippage realism (model memecoin names at higher cost).
+
 ## 2026-06-15 · P4 + Coinbase universe — EXPANDED 24→36, DEPLOYED (interactive)
 User is US → will trade on Coinbase, so universe MUST be Coinbase-listed. Built Coinbase
 universe via ccxt (coinbase lists 400 spot bases); 23/24 current coins are on Coinbase
