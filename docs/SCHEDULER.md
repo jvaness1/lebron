@@ -59,9 +59,19 @@ python scripts/live_report.py                                     # one-off, std
 --trend --notify --log` daily at 23:55 local. For each held coin it compares the
 latest daily close to its **100-day SMA** (the strategy's actual exit rule,
 `entry.trend_ma_days`) and **100-day EMA**, and flags any coin trading below its
-trend — the dual-momentum exit signal. Notifies + appends to `state/trend_check.log`.
-Currently **alert-only** (it does not sell). One-off: `python scripts/live_report.py
---trend`.
+trend. The exit signal is **the 100d SMA** (the strategy's actual rule). With
+`--exit` (the launchd job uses it) any coin below its 100d SMA is **market-sold
+to USDC** at EOD — long-only, never sells more than held, never withdraws, other
+holdings untouched; the slot stays cash until a rebalance re-enters. Notifies +
+appends to `state/trend_check.log`.
+
+```bash
+python scripts/live_report.py --trend          # check only, no orders
+python scripts/live_report.py --trend --exit   # check + auto-sell breaks (LIVE)
+```
+
+Note: this is a daily trend-exit, tighter than the backtested weekly cadence — a
+deliberate risk-tightening, by request.
 
 ## Caveats
 

@@ -135,7 +135,38 @@ def trend_report() -> tuple[str, str, bool]:
     else:
         summary = f"All {len(rows)} holdings above 100d SMA — trend intact"
         lines.append(f"  {summary}")
-    return "\n".join(lines), summary, bool(below)
+    return "\n".join(lines), summary, below
+
+
+def exit_positions(below: list[str]) -> tuple[str, str]:
+    """Auto-exit: market-sell to USDC every held coin that closed below its 100d
+    SMA. Long-only sell of (almost) the full position; leaves other holdings
+    untouched. Reuses the tested live order path. Returns (detail, summary)."""
+    from hermes_trading.execution import Order
+    # generous per-order cap so a full position exits in one order; still bounded.
+    b = CoinbaseBroker(quote="USDC", live=True, max_order_usd=200.0,
+                       max_total_usd=200.0, min_order_usd=1.0)
+    if not b.live:
+        return "  exit skipped — not live (missing keys).", "exit skipped (no keys)"
+    holdings, _, prices = b.account()
+    # 0.5% haircut avoids 'insufficient balance' rejects from precision/rounding.
+    orders = [Order(c, "sell", round(holdings[c] * 0.995, 2))
+              for c in below if holdings.get(c, 0.0) >= b.min_order_usd]
+    if not orders:
+        return "  nothing to exit (no held value below trend).", "no exit needed"
+    receipts = b.execute(orders, prices)
+    lines, sold = ["  AUTO-EXIT (below 100d SMA):"], []
+    for r in receipts:
+        o = r["order"]
+        ok = r["status"] == "placed"
+        if ok:
+            sold.append(o.base)
+        line = f"    SELL {o.base} ${o.usd:.2f} → {r['status']}"
+        if r.get("error"):
+            line += f": {r['error'][:120]}"
+        lines.append(line)
+    summary = ("SOLD to cash: " + ", ".join(sold)) if sold else "exit attempted — see log (errors)"
+    return "\n".join(lines), summary
 
 
 def _notify(summary: str, title: str) -> None:
@@ -146,9 +177,13 @@ def _notify(summary: str, title: str) -> None:
 
 def main() -> None:
     if "--trend" in sys.argv:
-        detail, summary, _ = trend_report()
+        detail, summary, below = trend_report()
         title = "Hermes EOD trend check"
         logfile = "trend_check.log"
+        if "--exit" in sys.argv and below:          # auto-sell broken coins to cash
+            ex_detail, ex_summary = exit_positions(below)
+            detail += "\n" + ex_detail
+            summary = ex_summary                      # the action is the headline
     else:
         detail, summary = build_report()
         title = "Hermes live positions"
