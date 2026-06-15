@@ -37,6 +37,22 @@ launchctl unload ~/Library/LaunchAgents/com.hermes.rebalance.plist
 tail -f state/rebalance.log                       # watch results
 ```
 
+## Live position report (every 30 min)
+
+`~/Library/LaunchAgents/com.hermes.report.plist` runs `scripts/live_report.py
+--notify --log` every 1800s (`StartInterval`, `RunAtLoad` on so it fires once at
+load). Read-only: reads the real Coinbase account, computes per-coin + total P&L
+vs actual fill cost basis. Fires a macOS notification with the summary line and
+appends the full report to `state/live_report.log`. Coinbase-only — independent
+of the paper/Railway worker.
+
+```bash
+launchctl load   ~/Library/LaunchAgents/com.hermes.report.plist   # start
+launchctl unload ~/Library/LaunchAgents/com.hermes.report.plist   # stop
+tail -f state/live_report.log                                     # history
+python scripts/live_report.py                                     # one-off, stdout only
+```
+
 ## Caveats
 
 - **Laptop-dependent.** If the Mac is off (not just asleep) at the fire time and
