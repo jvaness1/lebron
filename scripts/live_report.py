@@ -20,6 +20,7 @@ from pathlib import Path
 from hermes_trading.execution import CoinbaseBroker
 
 DEPOSIT_USD = 100.0          # original funding (USDC)
+TREND_DAYS = 100             # matches strategy.yaml entry.trend_ma_days
 STATE = Path(__file__).resolve().parent.parent / "state"
 
 
@@ -82,19 +83,83 @@ def build_report() -> tuple[str, str]:
     return "\n".join(lines), summary
 
 
+def trend_report() -> tuple[str, str, bool]:
+    """End-of-day trend check: for each HELD coin, compare the latest daily close
+    to its 100-day SMA (the strategy's actual exit rule) and 100-day EMA. Flags any
+    coin trading below its trend — the dual-momentum exit signal. Returns
+    (detail, summary, any_below). Read-only."""
+    b = CoinbaseBroker(quote="USDC")
+    if not b.has_keys:
+        return "No Coinbase keys — cannot run trend check.", "Hermes: no keys", False
+    holdings, _, _ = b.account()
+
+    rows, below = [], []
+    for c in sorted(holdings):
+        sym = f"{c}/{b.quote}"
+        try:
+            ohlcv = b._ex.fetch_ohlcv(sym, "1d", limit=TREND_DAYS + 60)
+        except Exception:
+            continue
+        closes = [float(x[4]) for x in ohlcv if x and x[4]]
+        if len(closes) < TREND_DAYS:
+            rows.append((c, closes[-1] if closes else 0.0, None, None, "n/a (history)"))
+            continue
+        px = closes[-1]
+        sma = sum(closes[-TREND_DAYS:]) / TREND_DAYS
+        # EMA(span=100) over available history, recursive (adjust=False).
+        k = 2 / (TREND_DAYS + 1)
+        ema = closes[0]
+        for v in closes[1:]:
+            ema = v * k + ema * (1 - k)
+        sma_ok, ema_ok = px > sma, px > ema
+        verdict = "ABOVE" if (sma_ok and ema_ok) else ("BELOW" if not sma_ok else "below EMA")
+        if not sma_ok:                        # strategy's real exit trigger = SMA
+            below.append(c)
+        rows.append((c, px, sma, ema, verdict))
+
+    ts = time.strftime("%Y-%m-%d %H:%M:%S %Z")
+    lines = [
+        f"EOD 100-DAY TREND CHECK · {ts}",
+        "  " + "-" * 62,
+        f"  {'coin':<6} {'price':>10} {'SMA100':>10} {'EMA100':>10}   trend",
+    ]
+    for c, px, sma, ema, verdict in rows:
+        s = f"{sma:>10g}" if sma else f"{'—':>10}"
+        e = f"{ema:>10g}" if ema else f"{'—':>10}"
+        mark = " ⚠️" if verdict.startswith("BELOW") else ""
+        lines.append(f"  {c:<6} {px:>10g} {s} {e}   {verdict}{mark}")
+
+    if below:
+        summary = "⚠️ BELOW 100d SMA: " + ", ".join(below) + " — dual-momentum exit signal"
+        lines.append(f"  >>> {summary}")
+    else:
+        summary = f"All {len(rows)} holdings above 100d SMA — trend intact"
+        lines.append(f"  {summary}")
+    return "\n".join(lines), summary, bool(below)
+
+
+def _notify(summary: str, title: str) -> None:
+    safe = summary.replace('"', "'")
+    subprocess.run(["osascript", "-e",
+                    f'display notification "{safe}" with title "{title}"'], check=False)
+
+
 def main() -> None:
-    detail, summary = build_report()
+    if "--trend" in sys.argv:
+        detail, summary, _ = trend_report()
+        title = "Hermes EOD trend check"
+        logfile = "trend_check.log"
+    else:
+        detail, summary = build_report()
+        title = "Hermes live positions"
+        logfile = "live_report.log"
     print(detail)
     if "--log" in sys.argv:
         STATE.mkdir(exist_ok=True)
-        with open(STATE / "live_report.log", "a") as f:
+        with open(STATE / logfile, "a") as f:
             f.write(detail + "\n\n")
     if "--notify" in sys.argv:
-        subprocess.run(
-            ["osascript", "-e",
-             f'display notification "{summary}" with title "Hermes live positions"'],
-            check=False,
-        )
+        _notify(summary, title)
 
 
 if __name__ == "__main__":

@@ -53,6 +53,16 @@ tail -f state/live_report.log                                     # history
 python scripts/live_report.py                                     # one-off, stdout only
 ```
 
+## End-of-day 100-day trend check (daily 23:55)
+
+`~/Library/LaunchAgents/com.hermes.trend.plist` runs `scripts/live_report.py
+--trend --notify --log` daily at 23:55 local. For each held coin it compares the
+latest daily close to its **100-day SMA** (the strategy's actual exit rule,
+`entry.trend_ma_days`) and **100-day EMA**, and flags any coin trading below its
+trend — the dual-momentum exit signal. Notifies + appends to `state/trend_check.log`.
+Currently **alert-only** (it does not sell). One-off: `python scripts/live_report.py
+--trend`.
+
 ## Caveats
 
 - **Laptop-dependent.** If the Mac is off (not just asleep) at the fire time and
