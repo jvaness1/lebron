@@ -73,10 +73,15 @@ def main() -> None:
 
     receipts = broker.execute(orders, prices)
     placed = sum(1 for r in receipts if r["status"] == "placed")
-    rprint(f"[bold]{'PLACED' if broker.live else 'DRY-RUN'}[/]: "
-           + " · ".join(f"{r['order'].side} {r['order'].base} [{r['status']}]" for r in receipts))
+    for r in receipts:
+        o = r["order"]
+        line = f"  {o.side.upper():<4} {o.base:<6} ${o.usd:.2f}  → {r['status']}"
+        if r.get("error"):
+            line += f": {r['error'][:120]}"
+        rprint(line)
     if broker.live:
-        rprint(f"[green]{placed}/{len(orders)} orders placed on Coinbase.[/]")
+        rprint(f"[green]{placed}/{len(orders)} orders placed on Coinbase.[/]" if placed
+               else "[red]0 placed — see errors above.[/]")
     else:
         rprint("[dim]No real orders placed (dry-run). Re-run with --live + keys to trade.[/]")
 

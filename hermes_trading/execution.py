@@ -162,10 +162,13 @@ class CoinbaseBroker:
                 continue
             try:
                 sym = f"{o.base}/{self.quote}"
-                px = prices.get(o.base) or float(self._ex.fetch_ticker(sym)["last"])
-                amount = o.usd / px
-                # market order; Coinbase handles precision. Long-only buy/sell only.
-                res = self._ex.create_order(sym, "market", o.side, amount)
+                if o.side == "buy":
+                    # Coinbase market BUY takes the COST to spend (quote amount), not base.
+                    res = self._ex.create_order(sym, "market", "buy", o.usd, None,
+                                                {"createMarketBuyOrderRequiresPrice": False})
+                else:
+                    px = prices.get(o.base) or float(self._ex.fetch_ticker(sym)["last"])
+                    res = self._ex.create_order(sym, "market", "sell", o.usd / px)
                 receipts.append({"order": o, "status": "placed", "id": res.get("id")})
             except Exception as exc:  # noqa: BLE001 — never let one order crash the run
                 receipts.append({"order": o, "status": "error", "error": str(exc)})
