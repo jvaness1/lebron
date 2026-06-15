@@ -64,5 +64,34 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       OPEN part: needs ≥3 live rebalances (a few weeks) before it can conclude — re-run
       it periodically and record the tracking error in LOG.md once data accrues.
 
+### Consistency & robustness agenda (added 2026-06-15) — the path to steadier real-money returns
+
+The live goal is CONSISTENT income, so prioritize robustness, drawdown depth+duration,
+and honesty over peak backtest return. Highest-value first.
+
+- [ ] **P10 — Survivorship-bias stress test (HIGHEST PRIORITY, honesty).** The backtest
+      universe is today's SURVIVORS — it never sees coins that crashed/delisted, so it
+      OVERSTATES the live edge. Re-run the live config including coins that died over the
+      window (delisted/near-zero), or at least a decayed/random-dropout proxy. Quantify how
+      much Sharpe/return/DD degrade. This sizes the gap between backtest and what real money
+      will actually earn — the single most important number for trusting forward expectations.
+- [ ] **P11 — Drawdown smoothing for the LIVE long-only config.** For income, DD depth and
+      DURATION matter more than peak return. P2 (vol-sizing) was tested on long-SHORT —
+      re-examine specifically for the live long-only 36-coin trend-filtered config: book-level
+      vol-targeting, portfolio trailing stop, per-name weight caps, partial-cash in high-vol
+      regimes. Goal: cut the ~22% DD and time-to-recovery without killing Sharpe. Honest OOS.
+- [ ] **P12 — Signal diversification (reduce single-factor risk).** Momentum has multi-month
+      droughts — the main threat to "consistent." Add a low-correlation second sleeve (e.g.
+      short-horizon mean-reversion on the same universe, or a low-vol/quality tilt) and blend.
+      Does a 2-sleeve blend raise the WORST quarter/year (consistency) even at some cost to
+      peak return? Report correlation of sleeves + blended walk-forward.
+- [ ] **P13 — Longer, multi-cycle data (unblock P6, foundational).** Build the throttled-fetch
+      + local-cache (parquet) pipeline so backtests span MORE than one ~3yr window. Shrinks
+      the #1 caveat (sample size) and raises the trustworthiness of every other finding.
+- [ ] **P14 — Income/withdrawal & sequence-risk model.** Simulate steady monthly withdrawals
+      against the equity curve (incl. the survivorship-haircut from P10). What withdrawal rate
+      survives the DD profile without ruin? Defines what passive income this realistically
+      supports per $ of capital — and at what point scaling capital is justified.
+
 ## Done
 (findings recorded in LOG.md)
