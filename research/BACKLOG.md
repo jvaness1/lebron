@@ -49,8 +49,15 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       risk control (trailing stop / vol-target / BTC-trend gate) to tame the ~46% DD,
       and quantify perp FUNDING cost so we know if live long-short net-of-funding still
       beats spot long-only (decides the real-money execution path: perps vs spot).
-- [ ] **P8 — Cost/turnover sensitivity.** Re-run the live config at maker vs taker
-      fees; how fragile is the edge to slippage assumptions?
+- [x] **P8 — Cost/turnover sensitivity.** DONE (LOG 2026-06-15): COST-ROBUST. Live
+      config turnover is only ~0.42x/week (low); net 78%@15bps → 59%@60bps (Coinbase-
+      real), Sharpe 1.04→0.91, positive 5/5 walk-forward at BOTH levels. Analytic
+      break-even ~3.6%/side (~24x the backtest assumption). Edge is NOT a cost artifact;
+      raises confidence in the real-money Coinbase deploy. scripts/p8_cost_sensitivity.py.
+- [ ] **P8a — Per-coin slippage realism (follow-up).** P8 modeled a UNIFORM per-side
+      cost. The universe holds memecoins (SHIB/PEPE) with worse real slippage. Re-run
+      P8 with name-specific costs (e.g. majors 15bps, memecoins 40-60bps) to check the
+      edge still holds when the cost is concentrated in the illiquid names actually held.
 - [~] **P9 — Live-vs-backtest drift tracker.** TOOLING BUILT (scripts/drift_tracker.py
       + the engine now logs state/equity_history.jsonl each rebalance). Compares live
       realised equity to a backtest over the same dates and flags divergence >3pp.
