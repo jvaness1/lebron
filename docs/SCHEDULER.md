@@ -72,6 +72,36 @@ python scripts/live_report.py --trend --exit   # DORMANT capability: check + aut
                                                # launchd job. Backtest before using.
 ```
 
+## Local research automation
+
+Real research must run LOCALLY (the cloud sandbox can't reach exchanges). Two jobs:
+
+**Autonomous agent — daily 04:00** (`com.hermes.research-daily` →
+`scripts/research_agent.sh`). Runs a local headless Claude (`claude -p`) in an
+ISOLATED git worktree `~/hermes-trading-research` on branch `research/auto`. That
+worktree has no `.env` → no Coinbase keys → it physically cannot trade (keys are
+also blanked in the wrapper env). It works one `research/BACKLOG.md` item (or
+proposes a new hypothesis), validates with the locked methodology, appends to
+`research/LOG.md`, and writes any improvement to `state/strategy.candidate.yaml`
+— never the live `state/strategy.yaml`. Commits to `research/auto` and pushes for
+review; never pushes/merges to `main`. Instructions + hard safety invariants:
+`research/AGENT_PROMPT.md`. Log: `state/research_agent.log`.
+
+Review its work: `git log main..research/auto`, or open a PR for `research/auto`.
+To deploy a proposal: review `state/strategy.candidate.yaml`, then YOU copy it to
+`state/strategy.yaml` and commit. Nothing auto-deploys.
+
+**Deterministic health-check — Mon 06:00** (`com.hermes.research-weekly` →
+`scripts/research_healthcheck.sh`). No LLM. Runs the drift tracker (live equity
+vs backtest) + xsmom walk-forward (edge persistence), appends to `research/LOG.md`,
+commits notes to `main`. Read-only on the strategy.
+
+```bash
+bash scripts/research_agent.sh          # run the agent now (isolated, safe)
+bash scripts/research_healthcheck.sh    # run the weekly check now
+git worktree list                       # see the research worktree
+```
+
 ## Caveats
 
 - **Laptop-dependent.** If the Mac is off (not just asleep) at the fire time and
