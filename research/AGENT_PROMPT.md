@@ -47,6 +47,8 @@ the live money at risk. You run unattended on a schedule, so be disciplined.
 - NEVER edit engine/execution code (`hermes_trading/`). Research lives in `scripts/`
   and `research/` (+ the candidate file). Do not change live trading behavior.
 - NEVER touch the launchd jobs, `.env`, or anything outside this repo.
+- NEVER push to or merge into `main`, and never `git checkout main`. Commit only on
+  the branch you are on (research/auto). A human merges your work after review.
 - If a task would require any of the above, STOP and just log why it's blocked.
 
 Be concise, skeptical, and honest. Do not overfit, cherry-pick, or claim an edge you
