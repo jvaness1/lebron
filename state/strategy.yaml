@@ -1,36 +1,35 @@
-# LIVE strategy (v04): LONG-ONLY dual momentum — the US-spot-tradeable version.
-# (No shorting: US retail can't legally access crypto perps, so the long-short book
-# isn't usable for real here. The long-short version is kept at strategy.xsmom.yaml
-# for research.)
+# LIVE strategy (v06): LONG-ONLY dual momentum on an EXPANDED, COINBASE-TRADEABLE universe.
+# Changes from v05: (1) universe expanded 24 -> 36 coins — more breadth robustly improves
+# cross-sectional selection (beats the old set in 4/5 walk-forward slices, Sharpe up);
+# (2) every coin is listed on Coinbase (US-tradeable) — TRX and BNB removed (not Coinbase-US),
+# illiquid memecoins excluded for slippage safety.
 #
-# Logic: each week rank 24 coins by 30d return, take the top 5, but only HOLD a coin
-# if it's also above its own 100-day average (dual momentum) — non-qualifying slots
-# sit in CASH. In a broad downtrend few coins qualify => mostly cash => the ~43% DD
-# of plain long-only is roughly HALVED to ~22% (validated OOS, scripts/longonly_design.py
-# + walk-forward). It's crash protection, not a return booster — gives up some upside
-# in calm bull runs to avoid the deep drawdowns. Backtest only; needs live forward proof.
-# NOTE for real trading: filter `universe` to coins your US exchange (Coinbase/Kraken)
-# actually lists before going live.
-version: '05'
+# Signal: multi-horizon momentum (avg of 14/30/60d returns) -> top 5; hold only those also
+# above their 100d MA (dual momentum), else cash. Weekly rebalance. ~halves drawdown vs
+# plain long-only. Backtest-validated; live forward-proof still pending.
+#
+# PAPER bot fetches these as <COIN>/USDT from KuCoin (EXCHANGE_ID=kucoin). To trade REAL on
+# Coinbase: set EXCHANGE_ID=coinbase, switch pairs to <COIN>/USD, and verify each coin is
+# actually enabled in YOUR Coinbase account before going live.
+version: '06'
 timeframe: 1d
 entry:
   indicator: xsmom
-  lookback_days: 30          # fallback if momentum_lookbacks unset
-  momentum_lookbacks: [14, 30, 60]   # multi-horizon momentum (v05) — beats single 30d
-                                     # in 4/5 walk-forward slices: higher Sharpe + lower DD
+  lookback_days: 30
+  momentum_lookbacks: [14, 30, 60]
   skip_days: 0
   top_k: 5
-  allow_short: false        # long-only (US spot)
-  trend_filter: true        # dual momentum: only hold coins above their trend MA
+  allow_short: false
+  trend_filter: true
   trend_ma_days: 100
-  regime_gate: false        # the breadth gate is long-short-specific; trend_filter replaces it
+  regime_gate: false
 rebalance_days: 7
-position_size_r: 1.0        # up to 100% long when all 5 slots qualify; cash otherwise
+position_size_r: 1.0
 costs:
   fees_bps: 10.0
   slippage_bps: 5.0
 risk:
-  max_drawdown_halt: 0.30   # backstop: flatten + halt if equity falls 30% below peak
+  max_drawdown_halt: 0.30
 universe:
   - BTC/USDT
   - ETH/USDT
@@ -43,16 +42,28 @@ universe:
   - DOT/USDT
   - LTC/USDT
   - BCH/USDT
-  - TRX/USDT
   - ATOM/USDT
   - NEAR/USDT
   - APT/USDT
   - ARB/USDT
-  - OP/USDT
   - INJ/USDT
   - SUI/USDT
-  - FIL/USDT
-  - ETC/USDT
   - XLM/USDT
   - AAVE/USDT
   - UNI/USDT
+  - ZEC/USDT
+  - TAO/USDT
+  - SEI/USDT
+  - WLD/USDT
+  - ENA/USDT
+  - SHIB/USDT
+  - ONDO/USDT
+  - PEPE/USDT
+  - STRK/USDT
+  - FET/USDT
+  - DASH/USDT
+  - ALGO/USDT
+  - ICP/USDT
+  - HBAR/USDT
+  - ETHFI/USDT
+  - STG/USDT
