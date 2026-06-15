@@ -1,4 +1,32 @@
-# Hermes-trading — full session handoff (2026-06-11)
+# Hermes-trading — full session handoff (updated 2026-06-15)
+
+## ⭐ CURRENT STATE (2026-06-15) — read first
+**LIVE ON COINBASE WITH REAL MONEY.** US user funded $100 (USDC) and went live:
+5 real market buys (~$20 each: INJ, NEAR, ONDO, WLD, XLM). Account ~$98.86 after
+~1.14% entry cost.
+
+- **Live strategy (state/strategy.yaml v06):** long-only cross-sectional momentum.
+  36 Coinbase-tradeable coins; signal = **multi-horizon momentum (avg of 14/30/60d
+  returns)** → top-5; hold only those above their **100d MA** (else cash); weekly
+  rebalance; size 1.0; 30% drawdown circuit breaker.
+- **Trade live (run WEEKLY, one-shot command):**
+  `cd ~/hermes-trading && EXCHANGE_ID=kucoin .venv/bin/python -m hermes_trading.execute --live --max-total 100 --max-order 25`
+  Dry-run = same without `--live`. Quote defaults to USDC.
+- **Execution layer:** hermes_trading/execution.py + execute.py — dry-run default,
+  long-only, hard $ caps, never sells>held, reconciles the REAL account each run,
+  never withdraws. Coinbase market BUYS use cost-to-spend (fixed). 54 tests pass.
+- **Coinbase key** in `~/hermes-trading/.env` (gitignored): COINBASE_API_KEY +
+  COINBASE_API_SECRET. ⚠️ Two keys were leaked in chat earlier — must be revoked.
+  NEVER paste an API secret anywhere but `.env`.
+- **Edge survives real costs** (OOS +59%@60bps → +80%@10bps/side). Backtest only;
+  the live $100 is the real proof. Coinbase fee observed ~1.14% to deploy.
+- **Pending:** weekly scheduler not set up (manual / local cron / cloud — execution
+  doesn't need Railway); scale gradually as it proves; Coinbase One not worth it at
+  $100 (only at scale); don't park cash for 3.5% USDC (HYSA pays more).
+- **Paper bot** still on Railway as a benchmark (separate from live money). Cloud
+  research routine DISABLED (sandbox can't reach exchanges or push). Do research LOCALLY.
+
+---
 
 Single source of truth for everything built/learned in the interactive session, so
 any "brain" (the hourly cloud research agent, a future Claude Code session, or a human)
