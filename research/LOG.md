@@ -5,6 +5,19 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-15 · P6 · longer-history test — DATA-PIPELINE BLOCKED (interactive)
+Attempted to validate the live long-only config on a longer multi-cycle window
+(scripts/p6_longer_history.py). BLOCKED: fetching total=3000 daily × 60 coins rate-
+limits KuCoin (180+ paginated calls) → most coins return partial/failed data, leaving
+only BTC/ETH full. So the deep fetch is unreliable and the test produced all-zeros (too
+few coins to form a 5-name book). The "only 2 coins have long history" reading is a
+RATE-LIMIT ARTIFACT, not truth (at total=1200 ~24 coins reliably return ~1199 days).
+VERDICT: a longer multi-cycle test is NOT cleanly achievable with the current live-API
+setup — needs a throttled fetch + local data cache, or a proper historical-data provider
+(point-in-time universe). The ~3yr / ~20-24 coin window remains the reliable validation
+basis; the SAMPLE-SIZE CAVEAT STANDS (cannot be resolved without a better data pipeline).
+Cloud bot also could not do this (no exchange access at all). No faked result recorded.
+
 ## 2026-06-12 · IMPROVEMENT FOUND — multi-horizon momentum (interactive, LOCAL data)
 Tested alternative SELECTION signals for the long-only strategy (scripts/factor_research.py),
 not just param tweaks. Single 60/40 OOS + 5-slice walk-forward, long-only K5 trend-filtered:

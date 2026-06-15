@@ -39,7 +39,7 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       cross-sectional spread, or just add illiquid noise? Report with a volume floor.
 - [x] **P5 — Skip-period momentum.** DONE: skip 7d WORSE (1.62→0.79). Skipped. orig: Add a 3–7d skip (rank on return excluding the
       most recent days) to dodge short-term reversal. Better OOS?
-- [ ] **P6 — Longer history for majors.** Pull max KuCoin daily for the longest-lived
+- [~] **P6 — Longer history for majors.** BLOCKED (LOG 2026-06-15): deep multi-coin fetch rate-limits KuCoin → unreliable; needs throttled fetch + local cache or a historical-data provider. Sample-size caveat STANDS. orig: Pull max KuCoin daily for the longest-lived
       coins; re-test on a longer, multi-regime window to shrink sample-size risk.
 - [x] **P7 — Long-only spot viability.** DONE (LOG 2026-06-11): long-only (no gate)
       is real (+47% vs benchmark -31%) but mediocre (Sharpe ~0.8, ~46% DD); the breadth
