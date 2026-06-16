@@ -69,17 +69,22 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
 The live goal is CONSISTENT income, so prioritize robustness, drawdown depth+duration,
 and honesty over peak backtest return. Highest-value first.
 
-- [ ] **P10 — Survivorship-bias stress test (HIGHEST PRIORITY, honesty).** The backtest
-      universe is today's SURVIVORS — it never sees coins that crashed/delisted, so it
-      OVERSTATES the live edge. Re-run the live config including coins that died over the
-      window (delisted/near-zero), or at least a decayed/random-dropout proxy. Quantify how
-      much Sharpe/return/DD degrade. This sizes the gap between backtest and what real money
-      will actually earn — the single most important number for trusting forward expectations.
+- [x] **P10 — Survivorship-bias stress test (HIGHEST PRIORITY, honesty).** DONE (LOG
+      2026-06-16, scripts/p10_survivorship.py). Random-dropout proxy on the real survivor
+      panel (truncate real prices → crash to 2% → delisted-flat), 200 seeds, exact live
+      config. EDGE SURVIVES with a ~1/3 HAIRCUT: baseline +76%/Sh1.08 → @20% 3-yr death rate
+      +53%/0.90 → @30% +30%/0.68; positive 5/5 walk-forward. The live dual-momentum trend
+      filter PROTECTS (≈doubles stressed return vs filter-off, DD 54→41%) — survivorship
+      insurance, not just crash insurance. Discount forward expectations ~1/3; edge is real.
+      Caveat: uniform-timing proxy understates bear-regime clustering; tail (held-death) is
+      a ~-20pp single-week book hit → motivates P11 weight cap/stop. Feeds P14.
 - [ ] **P11 — Drawdown smoothing for the LIVE long-only config.** For income, DD depth and
       DURATION matter more than peak return. P2 (vol-sizing) was tested on long-SHORT —
       re-examine specifically for the live long-only 36-coin trend-filtered config: book-level
       vol-targeting, portfolio trailing stop, per-name weight caps, partial-cash in high-vol
       regimes. Goal: cut the ~22% DD and time-to-recovery without killing Sharpe. Honest OOS.
+      NB (from P10): a per-name weight cap / stop also directly bounds the survivorship
+      "held-death" tail (~-20pp single-week book hit when a held coin delists) — test that.
 - [ ] **P12 — Signal diversification (reduce single-factor risk).** Momentum has multi-month
       droughts — the main threat to "consistent." Add a low-correlation second sleeve (e.g.
       short-horizon mean-reversion on the same universe, or a low-vol/quality tilt) and blend.
@@ -92,6 +97,8 @@ and honesty over peak backtest return. Highest-value first.
       against the equity curve (incl. the survivorship-haircut from P10). What withdrawal rate
       survives the DD profile without ruin? Defines what passive income this realistically
       supports per $ of capital — and at what point scaling capital is justified.
+      NB (from P10): use the HAIRCUT curve (~+53% @20% deaths) and the negative-tail seeds as
+      the realistic input, NOT the optimistic survivors-only +76% curve.
 
 ## Done
 (findings recorded in LOG.md)

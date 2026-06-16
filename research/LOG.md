@@ -5,6 +5,55 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-16 · P10 · survivorship-bias stress test — EDGE SURVIVES, ~1/3 HAIRCUT, TREND FILTER PROTECTS
+Why this matters (highest-priority honesty item): the backtest universe is TODAY's
+survivors — coins that pumped then died (delisted / →0) are absent. A momentum strategy
+SELECTS high-momentum names, so it would have bought some of those pumpers right before
+they collapsed — losses the survivors-only backtest never sees. This sizes the gap between
+backtest and what real money will actually earn. We can't fetch delisted coins from the
+live KuCoin API, so I used the backlog-sanctioned RANDOM-DROPOUT PROXY on the real survivor
+panel (scripts/p10_survivorship.py): for a random subset of coins, keep REAL prices up to a
+random death date (so momentum selects them exactly like real coins), then crash to 2% of
+pre-death price over 5d and hold flat (delisted near-zero). Non-NaN floor → a coin HELD
+through death realizes the full ~-98% loss (a NaN would wrongly net to 0). After death its
+momentum is ~0 and it's below its 100d MA → never re-selected (realistic). Captures BOTH
+channels: (1) selection of doomed pumpers, (2) the live trend filter's protection. BTC/ETH
+exempt (won't delist). EXACT live config (multi-horizon 14/30/60, K5, weekly, 100d-MA trend),
+36-coin universe, 15bps/side, honest OOS test half (~479d), 200 Monte-Carlo seeds/row.
+  BASELINE (survivors-only, optimistic): net +76.2% · Sharpe 1.08 · maxDD 41.7%
+  death rate   median net% [p10,p90]    Sharpe   held-death/run
+     10%        +67.6% [+30,+90]          1.07        0.33
+     20%        +52.6% [ -7,+89]          0.90        0.63
+     30%        +30.3% [-27,+76]          0.68        1.08
+  Trend filter protection @20% deaths (median): ON (live) +52.6%/0.90/DD41.3% vs
+     OFF +23.9%/0.62/DD54.3% — the live dual-momentum filter ~doubles stressed return
+     and cuts stressed DD 54→41%.
+  Walk-forward @20% deaths (5 slices, median): deaths-Sharpe [0.61,1.16,1.56,1.00,0.25]
+     vs baseline [0.97,1.67,1.81,1.64,0.46]; positive 5/5 (slice 5 marginal: net -3.5%).
+VERDICT: the live edge is REAL but the survivors-only backtest OVERSTATES it. At a plausible
+~20% 3-yr death rate among non-major alts, expect roughly a ONE-THIRD haircut to return
+(+76%→+53% OOS) and Sharpe ~1.1→0.9; at a harsh 30%, ~+30% and Sharpe 0.68. The edge does
+NOT vanish and stays positive across all 5 walk-forward regimes. Mechanism: median ~0.6
+held-deaths per OOS window at 20%, each costing ~-20pp on the book (one of 5 names → -98% in
+a week). KEY DEPLOY-RELEVANT FINDING: the live config's dual-momentum trend filter is doing
+real SURVIVORSHIP protection (dying coins lose their uptrend and get dropped), not just crash
+protection — it roughly doubles stressed return vs plain momentum. This raises confidence in
+the LIVE config specifically. NO config change (live already includes the protective filter;
+nothing better to deploy) → no candidate written. P10 RESOLVED.
+HONEST CAVEATS: (1) PROXY, not real delistings. Real deaths CLUSTER in bear regimes (you lose
+on the death AND on everything else at once), so the regime-agnostic uniform-timing model
+likely UNDERSTATES tail damage — partly visible as slice 5 flipping negative, but clustering
+is not fully modeled. (2) Severity fixed at -98% (2% floor); a true total loss (0) or a
+partial recovery would shift it — 2% is a middle assumption. Death RATE was swept (10-30%);
+20-30% over 3yr is realistic-to-harsh for alt-heavy tails, not conservative. (3) Median maxDD
+is ~flat (41%) but that MASKS the tail: an unlucky single-week held-death is a ~-20pp book hit
+(p10 net turns negative at 20-30%) — a per-name weight cap / stop (P11) would bound this.
+(4) Doesn't add the EXTRA breadth a true point-in-time universe would have had. (5) Same
+~3yr / one-OOS-window basis (sample-size caveat from P6 stands).
+FOLLOW-UP: feeds P11 (a per-name stop/weight cap directly bounds the held-death tail) and P14
+(use the ~1/3 return haircut + the negative-tail seeds as the realistic input to the
+withdrawal/sequence-risk model, not the optimistic survivors-only curve).
+
 ## 2026-06-15 · P8 · cost/turnover sensitivity of the LIVE config — EDGE IS COST-ROBUST
 Why this matters: strategy.yaml assumes 15bps/side, but the real Coinbase deploy cost
 ~1.14% (entry-only ≈ ~57bps/side) — ~4x the backtest assumption. So the live question is
