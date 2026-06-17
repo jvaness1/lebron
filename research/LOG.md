@@ -5,6 +5,49 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-17 · P8a · per-coin slippage realism — EDGE ROBUST; illiquid churn is only ~31%
+Why this matters: P8 modeled a UNIFORM per-side cost, but the live 36-coin universe mixes
+deep majors (BTC/ETH) with memecoins (SHIB/PEPE) and thin newer alts (TAO/SEI/WLD/ENA/ONDO/
+STRK/ETHFI/STG). Because momentum SELECTS recent pumpers, the worry is the book concentrates
+turnover into exactly the illiquid names, so a uniform cost understates the real drag. Built
+scripts/p8a_percoin_slippage.py: assigns each coin a liquidity TIER with its own per-side
+cost (10bps fee + tier slippage), recomputes cost as a PER-COIN turnover·cost dot-product (not
+uniform), measures turnover SHARE by tier, sweeps tier-C slippage to break-even, and walk-
+forwards. EXACT live config (multi-horizon 14/30/60, K5, weekly, 100d-MA trend), 36/36 coins,
+honest OOS (test half ~479d) + 5-slice walk-forward.
+  Tier A majors (slip 5/5bps): ADA AVAX BCH BTC DOGE DOT ETH LINK LTC SOL XRP
+  Tier B mid   (slip 15/20bps): AAVE ALGO APT ARB ATOM DASH FET HBAR ICP INJ NEAR SUI UNI XLM ZEC
+  Tier C thin  (slip 35/55bps): ENA ETHFI ONDO PEPE SEI SHIB STG STRK TAO WLD
+  TURNOVER SHARE by tier: A 25.6% · B 43.6% · C 30.8%  (avg round-trip 0.451x/rebal)
+  scenario                 net%   Sharpe  maxDD
+  uniform 15bps (backtest) 138.0%  1.33   38.0%
+  uniform 60bps (P8 pessim)111.0%  1.19   39.3%
+  TIERED realistic         129.6%  1.29   38.4%
+  TIERED pessimistic       124.5%  1.26   38.7%
+  break-even (raise ONLY tier-C slip): +100% net even at 200bps, +22% net at 800bps(!) tier-C
+  walk-forward tiered-realistic: Sharpe [0.45,1.35,2.17,1.25,-0.59] positive 4/5 | net [5,43,170,39,-26]
+  walk-forward tiered-pessim:    Sharpe [0.44,1.33,2.15,1.21,-0.61] positive 4/5 | net [5,42,167,37,-26]
+VERDICT (positive): the edge is NOT a uniform-cost artifact. The crux is turnover SHARE —
+the illiquid tier-C names (incl. memecoins) take only ~31% of the book's churn; the plurality
+(43.6%) is liquid mid-caps and 25.6% is majors. So concentrating realistic-to-pessimistic
+slippage in tier C barely moves the result (138%→129.6%→124.5%). Tier-C slippage would have to
+reach ~8%/side to erase the edge (tier C is too small a share of turnover to dominate). Notably
+the TIERED-realistic result (129.6%) BEATS the uniform-60 pessimistic (111%) because uniform-60
+wrongly charged majors memecoin rates — i.e. P8's uniform-60 was already conservative. Per-coin
+realism confirms the real-money Coinbase deploy is cost-safe. NO config change (live config
+already survives) → no candidate written. P8a RESOLVED (positive).
+HONEST CAVEATS: (1) The tiers and their bps are a JUDGMENT heuristic, not measured order-book
+depth; the conclusion rests on the turnover-SHARE mechanism (robust to the exact bps), not the
+point estimate. (2) DATA-WINDOW SHIFT noted: re-running P8 today gives net 138%@15bps and
+walk-forward 4/5 (slice 5 now -25%), vs the 2026-06-15 log's 78% and 5/5. total=1200 fetches
+the MOST RECENT bars, so the rolling OOS window moved and the latest slice flipped negative —
+a recent-regime drawdown, NOT a harness bug (P8a uniform numbers match P8 today exactly). This
+is itself a mild honesty flag: the most-recent OOS slice is currently the worst (~-25%) at all
+cost levels — worth watching live, and motivates the DD-smoothing work in P11. (3) Fixed
+slippage regardless of order SIZE; at $20-25 orders real slip is tiny, but it grows with size as
+the book scales — the break-even sweep (edge survives even 8%/side tier-C) covers the scale risk.
+(4) Same survivors-only ~3yr / one-OOS-window basis (sample-size caveat from P6 stands; see P13).
+
 ## 2026-06-16 · P10 · survivorship-bias stress test — EDGE SURVIVES, ~1/3 HAIRCUT, TREND FILTER PROTECTS
 Why this matters (highest-priority honesty item): the backtest universe is TODAY's
 survivors — coins that pumped then died (delisted / →0) are absent. A momentum strategy
