@@ -5,6 +5,66 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-18 · P11 · drawdown smoothing for the LIVE long-only config — NO ROBUST WIN; only honest lever is partial-cash
+Why this matters: for steady income, DD depth + recovery time beat peak return, and P10
+flagged a ~-20pp single-week "held-death" tail. P2 (vol-sizing) was tested on long-SHORT;
+re-examined the DD levers specifically for the LIVE long-only 36-coin trend-filtered config.
+Built scripts/p11_dd_smoothing.py (extends the P8 harness): EXACT live config (multi-horizon
+14/30/60, K5, weekly, 100d-MA trend), 36/36 coins, 15bps/side, honest train->test (60/40,
+report OOS only) + 5-slice walk-forward. Three overlays, each param SELECTED ON TRAIN:
+  BASELINE OOS: net +83.4% · Sharpe 1.05 · maxDD 48.7% · worst week -22.0%
+  [1] BOOK VOL-TARGETING (scale exposure by clip(target/trailing_book_vol,0,1), cap 1.0):
+      train picks target=1.00 (the only target with DD<=baseline) -> the scalar essentially
+      never binds (crypto book vol > target) -> OOS = +92%/1.11/45.5%, i.e. a NO-OP. Lower
+      targets CUT train Sharpe and did NOT cut DD (DD rose to 42-44% at targets 0.5-0.8).
+      MECHANISM: the big drawdowns are NOT preceded by elevated trailing vol (momentum
+      crashes are trend-reversals from calm), so a backward-looking vol-target can't dodge
+      them. NEGATIVE — vol-targeting does not smooth this strategy's DD.
+  [2] MARKET-DRAWDOWN GATE (cash when equal-weight market index >X% off its running peak;
+      causal; re-enters when it recovers — a clean fix for a naive book trailing-stop, which
+      is invalid: once in cash the book's equity is frozen below peak so it can NEVER re-arm):
+      train picks gate=30%. SINGLE-SPLIT OOS looks great: +99.3%/1.30/maxDD 24.1% — beats
+      baseline on all three. BUT the 5-slice walk-forward exposes it as the SAME drawdown-
+      insurance/whipsaw tradeoff already documented in P0a/P3/P7, NOT a robust Sharpe win:
+        slice Sharpe  base [0.22, 1.49, 2.83, 1.81, -0.37] (4/5+)
+                      gate [-0.15,1.50, 3.30, 1.81, -2.64] (3/5+)
+        slice maxDD%  base [35, 31, 26, 16, 26] -> gate [22, 31, 11, 16, 15]
+      The gate reliably CUTS maxDD every slice, HELPS in the crash slice (s3 +192->+240,
+      dodged the drop) — but WHIPSAWS in choppy recoveries (s1 -0.5->-6.3) and tanks the
+      worst slice's Sharpe (s5 -0.37->-2.64: cash through a grind-down then re-entered into
+      more pain). The single-split +1.30 was FLATTERED because the OOS test half happens to
+      contain the crash the gate dodged — the exact artifact that flattered the original P0
+      single-split (0.31->1.61) before P0a's walk-forward corrected it. Verdict: it's DD
+      insurance with a whipsaw cost, not robust risk-adjusted alpha; for long-only this echoes
+      P7 (the breadth gate HURTS long-only). NOT deployable as a clear upgrade.
+  [3] PER-NAME WEIGHT CAP / PARTIAL CASH (cap each name <20%, remainder cash):
+      Sharpe is INVARIANT at 1.05 across caps 0.20/0.15/0.12/0.10 — confirmed empirically;
+      for equal-weight K5 a cap is a uniform linear de-leverage (all weights, turnover, gross
+      scale by the same factor -> Sharpe unchanged). It trades return for DD ~1:1 and cleanly
+      bounds the P10 held-death tail:
+        cap 0.15 (75% inv): net 67% · DD 38.1% · worst wk -16.5%
+        cap 0.12 (60% inv): net 55% · DD 31.1% · worst wk -13.2%
+        cap 0.10 (50% inv): net 47% · DD 26.3% · worst wk -11.0%  (tail halved vs -22%)
+OVERALL VERDICT (NEGATIVE for "free" DD smoothing): no overlay improves OOS risk-adjusted
+return. Vol-targeting is a no-op (DDs aren't vol-predictable here); the market-DD gate is the
+already-known DD-insurance-with-whipsaw tradeoff (not robust for long-only); a per-name cap is
+pure linear de-leverage (Sharpe-flat). So DD can only be bought with return — either linearly
+(hold cash) or via a regime gate that costs robustness. The ONLY honest lever is the PARTIAL-
+CASH / per-name-cap dial: it bounds both maxDD and the held-death tail PROPORTIONALLY with
+Sharpe preserved. That is a capital-allocation choice, not an edge gain. NO config change -> no
+candidate written (live config stays). P11 RESOLVED (negative, with one usable dial).
+HONEST CAVEATS: (1) DD measured weekly-sampled (true intra-week DD is deeper) — consistent with
+prior P-numbers for comparability. (2) WINDOW-ROLL INSTABILITY (flagged in P8a): the SAME
+baseline's single-split OOS reads net/DD = 78%/31% (P8, 06-15), 138%/38% (P8a, 06-17), 83%/49%
+(today) as total=1200 rolls the window a few days each run — a large swing that is itself why
+the single OOS split can't be trusted and the walk-forward is the real test (it also explains
+why the gate's single-split win is unreliable). (3) Same survivors-only ~3yr / 5-slice basis
+(sample-size caveat from P6/P13 stands).
+FOLLOW-UP: feeds P14 — use the PARTIAL-CASH dial (e.g. 50-75% invested -> DD ~26-38%, worst
+week -11 to -16%, Sharpe ~1.05) as the realistic DD/tail input to the withdrawal/sequence-risk
+model, NOT vol-targeting or a stop. P11 closes the DD-smoothing question: there is no robust
+Sharpe-improving overlay; consistency for income comes from de-leveraging (cash), not cleverness.
+
 ## 2026-06-17 · P8a · per-coin slippage realism — EDGE ROBUST; illiquid churn is only ~31%
 Why this matters: P8 modeled a UNIFORM per-side cost, but the live 36-coin universe mixes
 deep majors (BTC/ETH) with memecoins (SHIB/PEPE) and thin newer alts (TAO/SEI/WLD/ENA/ONDO/

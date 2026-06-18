@@ -81,13 +81,15 @@ and honesty over peak backtest return. Highest-value first.
       insurance, not just crash insurance. Discount forward expectations ~1/3; edge is real.
       Caveat: uniform-timing proxy understates bear-regime clustering; tail (held-death) is
       a ~-20pp single-week book hit → motivates P11 weight cap/stop. Feeds P14.
-- [ ] **P11 — Drawdown smoothing for the LIVE long-only config.** For income, DD depth and
-      DURATION matter more than peak return. P2 (vol-sizing) was tested on long-SHORT —
-      re-examine specifically for the live long-only 36-coin trend-filtered config: book-level
-      vol-targeting, portfolio trailing stop, per-name weight caps, partial-cash in high-vol
-      regimes. Goal: cut the ~22% DD and time-to-recovery without killing Sharpe. Honest OOS.
-      NB (from P10): a per-name weight cap / stop also directly bounds the survivorship
-      "held-death" tail (~-20pp single-week book hit when a held coin delists) — test that.
+- [x] **P11 — Drawdown smoothing for the LIVE long-only config.** DONE (LOG 2026-06-18,
+      scripts/p11_dd_smoothing.py): NO ROBUST WIN. Vol-targeting = no-op (DDs aren't preceded
+      by high vol). Market-DD gate looks great single-split (Sharpe 1.05->1.30, DD 49->24%) but
+      walk-forward exposes it as the known DD-insurance/whipsaw tradeoff (3/5+ vs base 4/5+;
+      helps the crash slice, tanks the recovery/grind slices) — same flattering-by-included-
+      crash artifact as the original P0; echoes P7 (gate hurts long-only). Per-name weight cap
+      = pure linear de-leverage (Sharpe-INVARIANT 1.05); it bounds maxDD + the P10 held-death
+      tail PROPORTIONALLY (50% inv -> DD 26%, worst wk -22%->-11%) at 1:1 return cost. Only
+      honest DD lever = PARTIAL CASH. No config change. Feeds P14.
 - [ ] **P12 — Signal diversification (reduce single-factor risk).** Momentum has multi-month
       droughts — the main threat to "consistent." Add a low-correlation second sleeve (e.g.
       short-horizon mean-reversion on the same universe, or a low-vol/quality tilt) and blend.
@@ -102,6 +104,9 @@ and honesty over peak backtest return. Highest-value first.
       supports per $ of capital — and at what point scaling capital is justified.
       NB (from P10): use the HAIRCUT curve (~+53% @20% deaths) and the negative-tail seeds as
       the realistic input, NOT the optimistic survivors-only +76% curve.
+      NB (from P11): the DD/tail dial for the sim is PARTIAL CASH (per-name weight cap), the
+      only Sharpe-preserving lever found — e.g. 75% inv -> maxDD ~38%/worst wk -16%, 50% inv ->
+      DD ~26%/worst wk -11%. Vol-targeting/stops are dead ends (don't model them).
 
 ## Done
 (findings recorded in LOG.md)
