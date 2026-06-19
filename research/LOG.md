@@ -5,6 +5,43 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-19 · P14 · income / withdrawal & sequence-of-returns risk model — SWR is entirely a forward-return bet; treat as GROWTH capital, not income
+Why this matters: the live goal is consistent income. This asks the decisive question —
+what fixed monthly withdrawal survives the drawdown profile without ruin (a Safe Withdrawal
+Rate for a crypto-momentum book)? Built scripts/p14_income_model.py. Honest inputs per the
+P10/P11 NBs: return distribution = the P10 survivorship-STRESSED weekly net returns (live
+config + random deaths @20% 3-yr rate, 60 seeds pooled → 9,720 weekly samples, fat left
+tail, worstWk -39.5%), NOT the optimistic survivors-only curve; consistency dial = PARTIAL
+CASH (P11's per-name cap = uniform de-leverage, invested f∈{1.0,0.75,0.50}, cash@0%).
+SEQUENCE RISK via block bootstrap (B=8w preserves DD clustering) → 4,000 synthetic paths
+per cell, fixed monthly withdrawals, ruin = can't fund next withdrawal.
+
+RESULTS (5yr horizon, monthly withdrawals):
+  - Pooled returns: survivors-only ~+88%/yr → P10-stressed ~+75%/yr (the ~1/3 P10 haircut).
+  - On the P10-stressed (still bull-flattered) returns, SWR (≤5% 5yr-ruin):
+      f=1.00 → 15%/yr · f=0.75 → 15%/yr · f=0.50 → 20%/yr.
+    Partial cash RAISES the safe rate (ruin is vol-driven at these withdrawal levels, so
+    de-leveraging cuts ruin faster than it cuts the median) — a genuine sequence-risk lever,
+    consistent with P11's "partial cash is the only honest DD dial".
+  - Ruin rises with horizon (sequence risk compounds): 20%/yr withdraw → 0% @1yr, 4% @3yr,
+    9% @5yr, 13% @10yr. Block length barely matters (9–11% across B=1..16w) → autocorrelation
+    assumptions aren't driving it; the MEAN is.
+  - ★ RETURN-STRESS (the punchline): halve the pooled mean to ~+15%/yr (still POSITIVE, still
+    arguably generous for forward crypto) → SWR collapses to 0%/yr; even a 5% withdrawal carries
+    ~6% 5yr-ruin, 15% carries 27%. The entire "15% SWR" rests on assuming the backtest window's
+    ~75%/yr return persists. It is a forward-RETURN bet, not a withdrawal-rule guarantee.
+VERDICT: No config change (this is an allocation/income-policy finding, not a strategy edit).
+Honest takeaway for the real-money plan: this is GROWTH capital, not an income annuity. Do NOT
+size a fixed monthly draw off the backtest SWR. Prudent policy = withdraw conservatively
+(≤5–10%/yr) and only from a buffer that has actually accrued (percent-of-current-equity, not
+fixed-nominal, dodges the worst sequence risk); partial-cash de-leverage modestly improves
+ruin-safety per unit of income if/when drawing. CAVEATS: one ~3.3yr survivor window (one bull +
+one bear) → the bootstrap inherits a bull-flattered mean even after the P10 haircut; bootstrap
+breaks true regime persistence beyond the block; fixed-nominal withdrawals are the worst case
+(percent-of-equity is safer but doesn't give steady $). The stressed row, not the headline SWR,
+is the number to plan against. Feeds: when P13 lands multi-cycle data, re-run on a less
+bull-flattered window to firm up the forward-return input.
+
 ## 2026-06-19 · P12 · signal diversification (2nd sleeve blend) — NO HONEST DIVERSIFIER on long-only crypto; KILLED
 Why this matters: momentum has multi-month droughts — the chief threat to "consistent
 income". Tested whether blending the LIVE long-only momentum book with a low-correlation

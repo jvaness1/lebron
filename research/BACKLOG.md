@@ -103,15 +103,15 @@ and honesty over peak backtest return. Highest-value first.
 - [ ] **P13 — Longer, multi-cycle data (unblock P6, foundational).** Build the throttled-fetch
       + local-cache (parquet) pipeline so backtests span MORE than one ~3yr window. Shrinks
       the #1 caveat (sample size) and raises the trustworthiness of every other finding.
-- [ ] **P14 — Income/withdrawal & sequence-risk model.** Simulate steady monthly withdrawals
-      against the equity curve (incl. the survivorship-haircut from P10). What withdrawal rate
-      survives the DD profile without ruin? Defines what passive income this realistically
-      supports per $ of capital — and at what point scaling capital is justified.
-      NB (from P10): use the HAIRCUT curve (~+53% @20% deaths) and the negative-tail seeds as
-      the realistic input, NOT the optimistic survivors-only +76% curve.
-      NB (from P11): the DD/tail dial for the sim is PARTIAL CASH (per-name weight cap), the
-      only Sharpe-preserving lever found — e.g. 75% inv -> maxDD ~38%/worst wk -16%, 50% inv ->
-      DD ~26%/worst wk -11%. Vol-targeting/stops are dead ends (don't model them).
+- [x] **P14 — Income/withdrawal & sequence-risk model.** DONE (LOG 2026-06-19,
+      scripts/p14_income_model.py): block-bootstrap sequence-risk sim on the P10-stressed
+      weekly returns w/ the P11 partial-cash dial. On the (bull-flattered) ~75%/yr stressed
+      returns, SWR≤5%-5yr-ruin = 15%/yr (f=1.0), 20%/yr (f=0.5 — partial cash RAISES the safe
+      rate, ruin is vol-driven). BUT halving the mean to a still-positive ~+15%/yr collapses SWR
+      to ~0 → the headline SWR is entirely a forward-RETURN bet. VERDICT: treat as GROWTH
+      capital, not an income annuity; withdraw conservatively (≤5–10%/yr) from accrued buffer,
+      percent-of-equity not fixed-nominal. No config change. Re-run on multi-cycle data once P13
+      lands. orig NBs: P10 haircut curve as input (done); partial cash = only DD dial (confirmed).
 
 ## Done
 (findings recorded in LOG.md)
