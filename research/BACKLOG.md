@@ -90,11 +90,16 @@ and honesty over peak backtest return. Highest-value first.
       = pure linear de-leverage (Sharpe-INVARIANT 1.05); it bounds maxDD + the P10 held-death
       tail PROPORTIONALLY (50% inv -> DD 26%, worst wk -22%->-11%) at 1:1 return cost. Only
       honest DD lever = PARTIAL CASH. No config change. Feeds P14.
-- [ ] **P12 — Signal diversification (reduce single-factor risk).** Momentum has multi-month
-      droughts — the main threat to "consistent." Add a low-correlation second sleeve (e.g.
-      short-horizon mean-reversion on the same universe, or a low-vol/quality tilt) and blend.
-      Does a 2-sleeve blend raise the WORST quarter/year (consistency) even at some cost to
-      peak return? Report correlation of sleeves + blended walk-forward.
+- [x] **P12 — Signal diversification (reduce single-factor risk).** DONE (LOG 2026-06-19,
+      scripts/p12_diversification.py): NO HONEST DIVERSIFIER, KILLED. Short-term reversal (the
+      textbook momentum complement) is POSITIVELY correlated (~0.6-0.7 train) with the momentum
+      book — in a long-only crypto universe both sleeves are dominated by common market beta.
+      Low-vol has low corr (TEST 0.16) but near-zero standalone return, so blending only de-risks
+      monotonically down the risk/return line (worstQ -34%->-17% at 60% sleeve, but Sharpe falls
+      the whole way and worstWk is flat — coincident market crash hits both). TRAIN-selected blend
+      = 100% momentum (no blend raises Sharpe). Same in character as P11's partial-cash lever, not
+      free consistency. The consistency dial remains partial-cash (P11/P14). orig: Momentum has
+      multi-month droughts. Add a low-correlation second sleeve and blend.
 - [ ] **P13 — Longer, multi-cycle data (unblock P6, foundational).** Build the throttled-fetch
       + local-cache (parquet) pipeline so backtests span MORE than one ~3yr window. Shrinks
       the #1 caveat (sample size) and raises the trustworthiness of every other finding.

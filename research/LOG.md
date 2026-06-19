@@ -5,6 +5,43 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-19 · P12 · signal diversification (2nd sleeve blend) — NO HONEST DIVERSIFIER on long-only crypto; KILLED
+Why this matters: momentum has multi-month droughts — the chief threat to "consistent
+income". Tested whether blending the LIVE long-only momentum book with a low-correlation
+second long-only sleeve on the SAME 36-coin universe raises the WORST quarter (consistency)
+honestly OOS. Built scripts/p12_diversification.py: each sleeve = top-5, equal weight, weekly,
+15bps/side; honest train->test (60/40) + 5-slice walk-forward; sleeve params & blend weight
+(alpha = MOM capital share) SELECTED ON TRAIN ONLY. "worstQ" = min compounded return over
+rolling 13-rebalance (~quarter) windows.
+Candidate second sleeves (standalone TRAIN Sharpe / TRAIN corr-to-MOM):
+  SHORT-TERM REVERSAL (long the K most-oversold, lb 3-10d, +/- 100d-MA gate):
+    best REV lb3 no-trend Sharpe 0.96 — but corr-to-MOM 0.72 (all REV variants corr 0.56-0.74)
+  LOW-VOL (long K lowest 30/60d realized-vol): vw60 Sharpe 0.43, corr 0.55 (best of the LV set)
+KEY MECHANISM: short-term reversal — the TEXTBOOK momentum complement — is POSITIVELY
+correlated (~0.6-0.7) with the momentum book here, because in a long-only crypto universe
+BOTH sleeves are dominated by the common market beta (everything co-moves), so reversal does
+NOT diversify. Low-vol has the lowest correlation (TEST 0.16) but a near-zero standalone
+return (Sharpe 0.43 << MOM 1.88), so blending it only DILUTES.
+RESULT: the TRAIN-selected blend is alpha=1.0 (= MOM-ONLY) — NO blend raises TRAIN Sharpe.
+On TEST, adding the low-vol sleeve walks the book monotonically DOWN the risk/return line:
+  alpha 1.0 (mom only): net +129% Sharpe 1.35 maxDD 38.0% worstQ -34.0% worstWk -15.5%
+  alpha 0.6 (60/40):    net  +70% Sharpe 1.21 maxDD 25.7% worstQ -21.9% worstWk -15.3%
+  alpha 0.4 (40/60):    net  +41% Sharpe 0.97 maxDD 19.8% worstQ -16.9% worstWk -15.4%
+  alpha 0.0 (sleeve):   net  -11% Sharpe -0.09 maxDD 40.2% worstQ -40.2% worstWk -15.5%
+worstQ does improve (-34%->-17%) but ONLY by giving up proportional return, and Sharpe falls
+the whole way — this is identical in character to holding partial cash / a lower weight, the
+exact lever P11 already identified as the ONLY honest DD dial. It is NOT free consistency from
+low-correlation alpha. Note worstWk is ~flat (-15.5% -> -15.4%) at every alpha: the worst week
+is a market-wide coincident crash that hits the low-vol sleeve too, so the 2nd sleeve gives no
+tail protection either. 5-slice walk-forward: MOM-only and the train-picked blend are identical
+(alpha=1.0). VERDICT: NEGATIVE — no second sleeve on this universe is a Sharpe-positive
+diversifier; reversal co-moves with momentum, low-vol only de-risks like partial cash. The
+"consistency" lever remains partial-cash (P11/P14), not factor diversification. No config
+change. KILLED. CAVEATS: long-only spot only (a long-SHORT reversal sleeve could be market-
+neutral and genuinely uncorrelated, but the live US path can't short — moot); survivors-only
+36-coin / one ~3yr window (P13 still the binding caveat); did not test cross-asset (BTC-vs-alt
+rotation) or an off-crypto sleeve.
+
 ## 2026-06-18 · P11 · drawdown smoothing for the LIVE long-only config — NO ROBUST WIN; only honest lever is partial-cash
 Why this matters: for steady income, DD depth + recovery time beat peak return, and P10
 flagged a ~-20pp single-week "held-death" tail. P2 (vol-sizing) was tested on long-SHORT;
