@@ -39,8 +39,11 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       cross-sectional spread, or just add illiquid noise? Report with a volume floor.
 - [x] **P5 — Skip-period momentum.** DONE: skip 7d WORSE (1.62→0.79). Skipped. orig: Add a 3–7d skip (rank on return excluding the
       most recent days) to dodge short-term reversal. Better OOS?
-- [~] **P6 — Longer history for majors.** BLOCKED (LOG 2026-06-15): deep multi-coin fetch rate-limits KuCoin → unreliable; needs throttled fetch + local cache or a historical-data provider. Sample-size caveat STANDS. orig: Pull max KuCoin daily for the longest-lived
-      coins; re-test on a longer, multi-regime window to shrink sample-size risk.
+- [x] **P6 — Longer history for majors.** RESOLVED via P13 (LOG 2026-06-20): the throttled
+      cache unblocked the deep fetch; the live config now tested on 2017-2026 (~8.7y). Edge
+      persists (7/9 positive years, +3349%) but the recent window was BULL-FLATTERED (Sharpe
+      1.33→0.91, true maxDD ~80% not ~46%). Sample-size caveat materially shrunk for survivors.
+      orig: BLOCKED — deep multi-coin fetch rate-limits KuCoin; needed throttled fetch + cache.
 - [x] **P7 — Long-only spot viability.** DONE (LOG 2026-06-11): long-only (no gate)
       is real (+47% vs benchmark -31%) but mediocre (Sharpe ~0.8, ~46% DD); the breadth
       gate HURTS long-only (it's long-short-specific). Spot real-money path is viable
@@ -100,9 +103,21 @@ and honesty over peak backtest return. Highest-value first.
       = 100% momentum (no blend raises Sharpe). Same in character as P11's partial-cash lever, not
       free consistency. The consistency dial remains partial-cash (P11/P14). orig: Momentum has
       multi-month droughts. Add a low-correlation second sleeve and blend.
-- [ ] **P13 — Longer, multi-cycle data (unblock P6, foundational).** Build the throttled-fetch
-      + local-cache (parquet) pipeline so backtests span MORE than one ~3yr window. Shrinks
-      the #1 caveat (sample size) and raises the trustworthiness of every other finding.
+- [x] **P13 — Longer, multi-cycle data (unblock P6, foundational).** DONE (LOG 2026-06-20,
+      scripts/data_cache.py + scripts/p13_longer_history.py): built a SERIAL, throttled, retry+
+      backoff, INCREMENTAL OHLCV cache (data/ohlcv/, CSV — venv has no pyarrow; gitignored/
+      regenerable). Cached all 36 live coins back to 2017-10 (~8.7y vs prior ~3.3y). Re-ran the
+      live config across cycles: edge PERSISTS (7/9 positive years, +3349%) but the recent ~3yr
+      basis was BULL-FLATTERED (Sharpe 1.33→0.91; true maxDD ~80%, ~2x what prior P-numbers
+      showed). Foundational: `from data_cache import load_panel` now backs cheap longer-window
+      re-tests. No config change (honesty correction, not a beat). Feeds P14/P15.
+
+- [ ] **P15 — Re-validate prior findings on the less-bull-flattered 2020→ window.** Now that
+      the cache exists, cheaply re-run P8 (cost), P10 (survivorship), P11 (DD smoothing) and
+      P14 (income/SWR) on the 2020→ multi-cycle panel instead of the bull-flattered 2023→ window.
+      P13 showed Sharpe ~0.9 / maxDD ~80% on the longer basis — does the ~1/3 P10 haircut, the
+      partial-cash DD dial, and the SWR all hold up when the input distribution includes the full
+      2022 bear? Highest-value because it firms up (or corrects) the whole findings stack at once.
 - [x] **P14 — Income/withdrawal & sequence-risk model.** DONE (LOG 2026-06-19,
       scripts/p14_income_model.py): block-bootstrap sequence-risk sim on the P10-stressed
       weekly returns w/ the P11 partial-cash dial. On the (bull-flattered) ~75%/yr stressed

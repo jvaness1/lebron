@@ -5,6 +5,63 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-20 · P13 (+ unblocks P6) · throttled-fetch + local cache → LONGER multi-cycle validation — the recent window was BULL-FLATTERED; edge persists but DD is ~2x deeper
+Why this matters: the #1 caveat on EVERY prior finding is sample size — ~3.3yr, one OOS
+window. P6 tried to fix it and got rate-limited by KuCoin (deep concurrent fetch → partial
+data → all-zeros). P13 = build the data pipeline P6 needed, then finally run the longer test.
+
+BUILT scripts/data_cache.py — a SERIAL, throttled (ccxt rateLimit + 0.35s/page), retry-with-
+backoff, INCREMENTAL OHLCV cache (data/ohlcv/<ex>/<tf>/<COIN>.csv, gitignored/regenerable).
+Fixes the two bugs that silently broke P6's fetch: (1) KuCoin returns EMPTY when `since`
+predates a coin's listing — must SKIP the window forward, not treat as end-of-data; (2)
+KuCoin caps each page by TIME not count, so it returns <1000 bars mid-history — the old
+"short page = live edge" break stopped BTC at 2020. Re-running only fetches bars after the
+last cached ts (idempotent: +0 on re-run). CSV not parquet (this venv has no pyarrow/
+fastparquet; pandas 3.0 — avoided installing into the shared trading venv). Cached all 36
+live-universe coins: BTC/ETH back to 2017-10, full window 2017-10..2026-06 (~8.7y, 3160 days)
+vs the prior total=1200 (~3.3yr). Library: `from data_cache import load_panel`.
+
+THEN scripts/p13_longer_history.py ran the EXACT live config (multi-horizon 14/30/60, K5,
+weekly, 100d-MA trend, 15bps/side) on the long ragged panel (coins enter over time; rows
+with <5 scored coins auto-cash). NB the live params were selected on the RECENT window, so
+pre-2023 is genuinely out-of-sample-in-TIME (cycles never used for selection).
+  Live-coin count: 2018 ~2, 2019 ~6, 2020 ~11, 2021 ~19, 2022 ~23, 2023 ~28, 2024+ ~36.
+  (Read pre-2020 as too-thin/most-survivor-biased; the 2020→ panel ≥11 coins is the real test.)
+  FULL 2017-2026: net +3349%  Sharpe 0.90  maxDD 83%  (442 rebals, in-market 75%)
+  Per calendar year (Sharpe): 2019 +0.64 · 2020 +1.37 · 2021 +1.32 · 2022 −1.29 (net −49.5%!)
+    · 2023 +1.96 · 2024 +1.93 · 2025 +0.90 · 2026 +1.55  → 7/9 positive years, median 1.32.
+  17×~6mo walk-forward: 9/17 positive-Sharpe, median 0.25. Worst: s9 2021-11 (−4.01, the
+    2021 top) + s10 2022-05 (−2.98, LUNA/bear) — consecutive −33%/−45% half-years.
+  ★ Window-comparison (the punchline — same exact config, different start):
+      2023→ (prior basis): net +1204%  Sharpe 1.33  maxDD 46%
+      2021→ (top+full bear up front): net +449%  Sharpe 0.77  maxDD 78%
+      2020→ (multi-cycle): net +1220%  Sharpe 0.91  maxDD 81%
+VERDICT (validation, not a config change): the edge is REAL and PERSISTENT across cycles —
+strongly positive in every trending year (2020/21/23/24), 7/9 positive years, compound
++3349% over 8.7y → it is NOT one lucky window. BUT the longer window materially REVISES the
+risk basis: (1) the recent ~3yr window was BULL-FLATTERED — full-period Sharpe is 0.90 vs the
+1.0–1.33 the short windows showed (the 2023-24 monster years inflated it); (2) true maxDD is
+~80% (peak 2021 → trough 2022), nearly DOUBLE the ~30–49% every prior P-number reported,
+because the recent window barely contained a bear; (3) the 100d-MA trend filter did NOT save
+2022 (in-market 77%, still −49.5%) — momentum gets chopped in a grinding bear, it only dodges
+fast crashes. This independently CONFIRMS P14's "bull-flattered mean / treat as growth capital"
+and P11's "deep-DD, partial-cash is the only real dial" — now with a ~80% empirical DD to plan
+against, not a ~40% one. NO config change: nothing here beats the live config (it's still the
+validated choice and its trend filter still helps 2020/2025); this is an HONESTY correction to
+forward expectations. Plan against Sharpe ~0.8–0.9 and ~70–80% potential DD, not the rosy
+~3yr numbers. No candidate written.
+CAVEATS: (1) SURVIVORSHIP WORSENS going back — this is today's survivor panel; coins that
+lived in 2019-2021 and later died are absent, so the early-period returns are survivor-
+optimistic UPPER bounds (compounds with P10's ~1/3 haircut, which this does NOT re-apply).
+(2) Thin early universe (2018 didn't trade, 2019 ~6 coins) → the deep multi-cycle claim rests
+on 2020→ (≥11 coins); pre-2020 is illustrative only. (3) maxDD weekly-sampled (intra-week
+deeper). (4) Still one venue (KuCoin), one path (long-only spot). (5) The pipeline only deepens
+HISTORY for survivors — it does not add point-in-time delisted names (that's P10's job).
+FOLLOW-UPS: P6 RESOLVED via this pipeline (longer test now achievable & done). The cache is now
+the foundation for cheaply re-running P8/P10/P11/P14 on the 2020→ window — every prior finding
+can be re-checked on a less bull-flattered basis (added as P15). The ~80% DD figure should feed
+any future sizing / withdrawal policy (P14).
+
 ## 2026-06-19 · P14 · income / withdrawal & sequence-of-returns risk model — SWR is entirely a forward-return bet; treat as GROWTH capital, not income
 Why this matters: the live goal is consistent income. This asks the decisive question —
 what fixed monthly withdrawal survives the drawdown profile without ruin (a Safe Withdrawal

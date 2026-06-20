@@ -15,4 +15,7 @@ state/portfolio.json
 state/equity_history.jsonl
 state/history/
 
+# local OHLCV cache (regenerable via scripts/data_cache.py; keeps the repo lean)
+data/ohlcv/
+
 .DS_Store
