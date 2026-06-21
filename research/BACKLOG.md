@@ -112,12 +112,23 @@ and honesty over peak backtest return. Highest-value first.
       showed). Foundational: `from data_cache import load_panel` now backs cheap longer-window
       re-tests. No config change (honesty correction, not a beat). Feeds P14/P15.
 
-- [ ] **P15 — Re-validate prior findings on the less-bull-flattered 2020→ window.** Now that
-      the cache exists, cheaply re-run P8 (cost), P10 (survivorship), P11 (DD smoothing) and
-      P14 (income/SWR) on the 2020→ multi-cycle panel instead of the bull-flattered 2023→ window.
-      P13 showed Sharpe ~0.9 / maxDD ~80% on the longer basis — does the ~1/3 P10 haircut, the
-      partial-cash DD dial, and the SWR all hold up when the input distribution includes the full
-      2022 bear? Highest-value because it firms up (or corrects) the whole findings stack at once.
+- [x] **P15 — Re-validate prior findings on the less-bull-flattered 2020→ window.** DONE (LOG
+      2026-06-20, scripts/p15_revalidate.py): the whole stack HOLDS qualitatively on the 2020→ AND
+      2021→ multi-cycle panels (full 2022 bear in the input). P8 cost-robust (break-even ~3.6–4.3%/
+      side, +ve at 60bps 4/5 WF); P10 survivorship haircut SMALLER than the prior ~1/3 (~17–25% at
+      30% death, Sharpe barely moves — broad universe dilutes deaths; trend filter ~2× protection
+      re-confirmed); P11 market-DD gate still a return-killer (WF 2–3/5 vs base 4–5/5), weight cap
+      still the only Sharpe-invariant DD lever; P14 SWR still entirely a forward-return bet (halve
+      mean → SWR 0). NO config change. Only correction = P13's already-known maxDD ~80% (not ~46%)
+      + Sharpe ~0.8–0.9. Caveat → P16.
+
+- [ ] **P16 — Bear-LOCATED OOS test (sharpen P15's caveat).** P15's 60/40 split lands the TEST
+      half post-2023 (a bull window), so its per-finding "OOS" numbers are bull-located; only the
+      FULL window + walk-forward slices actually contain the 2022 bear. Build an explicit OOS where
+      TRAIN = a bull window and TEST = the 2022 bear (Jan–Dec 2022), and re-measure the live edge +
+      the P10 survivorship haircut there directly. LOWER priority than it sounds — the WF already
+      exposes the bear slice (net −12% / Sharpe ~0.1 on 2020→, −0.89 on 2021→); this only sharpens
+      the point estimate for the findings that currently lean on a bull test-half.
 - [x] **P14 — Income/withdrawal & sequence-risk model.** DONE (LOG 2026-06-19,
       scripts/p14_income_model.py): block-bootstrap sequence-risk sim on the P10-stressed
       weekly returns w/ the P11 partial-cash dial. On the (bull-flattered) ~75%/yr stressed

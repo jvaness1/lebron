@@ -5,6 +5,65 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-20 · P15 · re-validate the P8/P10/P11/P14 stack on the 2020→ multi-cycle window — the whole stack HOLDS qualitatively; only correction is the (already-known) ~80% true maxDD
+Why: P13 showed the recent ~2023→ basis the prior P-numbers were fit/reported on was
+BULL-FLATTERED (Sharpe 1.33→0.91, true maxDD ~80% not ~46%). P8 (cost), P10 (survivorship),
+P11 (DD smoothing), P14 (income/SWR) were ALL measured on that flattered window. P15 cheaply
+re-runs their cores on the cached 2020→ panel (includes the FULL 2022 bear) via the new
+`from data_cache import load_panel`. Method: EXACT live engine + EXACT death model/bootstrap
+from p10/p14, only the input window changed. scripts/p15_revalidate.py. Ran two starts
+(2020-01-01, 6.5y/36 coins; 2021-01-01, 5.5y — cleaner, starts at 15 coins not 9) to check
+the thin early-2020 period (9 coins) isn't driving it. MC trimmed (P10 100 seeds, P14 40-seed
+pool/3000 paths) — robustness re-check, not a primary fit. Also fixed the death injector to be
+WINDOW-AWARE (pick each doomed coin's death date inside its OWN live range; the original picked
+a global date and silently skipped coins NaN there → under-injected deaths on a ragged panel).
+
+BASELINE (live config) on the longer basis — reaffirms P13's correction:
+  2020→: FULL net +1220% Sharpe 0.91 maxDD 81%; 2021→: +449% Sharpe 0.77 maxDD 78%.
+  5-slice WF: 2020→ 5/5+ (bear slice s3 weakest: net −12%, Sharpe 0.13); 2021→ 4/5+ (bear
+  slice clearly negative, Sharpe −0.89). The trend filter goes to cash in the bear and
+  prevents catastrophe, but the bear is unambiguously the weak regime.
+  ⚠️ KEY CAVEAT: the 60/40 OOS split lands the TEST half post-2023 (a bull window), so the
+  per-finding "OOS" numbers below are themselves bull-located. The honest multi-regime read
+  is the FULL window + the walk-forward slices (which DO contain the 2022 bear).
+
+P8 (cost) — HOLDS, arguably stronger. Turnover ~0.46x/rebal (low, unchanged). Analytic
+  break-even 362–428 bps/side (~3.6–4.3%, ≈24–29× the 15bps assumption). Edge clearly positive
+  at 60bps Coinbase-real (2020→ OOS +297%/Sharpe 1.09). WF positive 4/5 at BOTH 15 and 60bps
+  (only the bear slice negative). Edge is NOT a cost artifact. Verdict unchanged.
+
+P10 (survivorship) — HOLDS; haircut is SMALLER than the prior ~1/3. At 30% 3-yr death rate:
+  2020→ OOS +413%→+309% (Sharpe 1.22→1.12, ~25% return haircut); 2021→ +204%→+170% (1.09→1.02,
+  ~17%). The earlier ~1/3 haircut looks conservative — a BROADER universe (median 27 live coins
+  vs the old short-window panel) dilutes a fixed-fraction of deaths and gives the book more
+  healthy alternatives. Trend-filter protection re-confirmed strongly (20% deaths: trend ON
+  ~+370%/maxDD47% vs OFF ~+197%/maxDD59% — roughly 2× return, lower DD). Caveat: deaths land
+  partly in the bull test-half, so this haircut is a lower bound; still, the QUALITATIVE verdict
+  (edge survives survivorship, the live dual-momentum filter is the protection) is intact.
+
+P11 (DD smoothing) — HOLDS decisively, across the full bear. Market-DD gate (TRAIN-picked)
+  again a RETURN-KILLER: OOS Sharpe 1.1–1.2 → 0.5–0.7, WF 2–3/5+ vs base 4–5/5+ (same DD-
+  insurance/whipsaw tradeoff — helps the crash slice, tanks the recovery/grind slices). Per-name
+  weight cap = pure linear de-leverage, Sharpe-INVARIANT (1.22 at 100% and at 50% invested) and
+  bounds DD/tail PROPORTIONALLY (50% inv → maxDD 49%→27%, worstWk −24%→−12%). The only honest DD
+  lever remains PARTIAL CASH. Verdict unchanged.
+
+P14 (income/SWR) — HOLDS exactly. SWR (ruin≤5%/5yr, P10-stressed returns): f=1.0 → 5–10%/yr,
+  f=0.5 → 10–15%/yr (partial cash RAISES the safe rate; ruin is vol-driven). RETURN-STRESS
+  (halve the pooled mean to ~−1…+8%/yr) → SWR collapses to 0. The headline SWR is ENTIRELY a
+  forward-return bet → treat as GROWTH capital, not an income annuity; withdraw conservatively
+  (≤5–10%/yr, percent-of-equity). Verdict unchanged; the longer basis makes f=1.0 SWR a touch
+  more conservative (5%/yr on 2021→ vs prior 15%).
+
+VERDICT: the findings stack is ROBUST to including the 2022 bear — every finding's qualitative
+character survives, several get slightly more sobering point estimates (Sharpe ~0.8–0.9, true
+maxDD ~80%). No new edge, NO config change. The single material correction is the one P13
+already made (maxDD ~80%, not ~46%). Net effect: the stack is firmed up, not overturned.
+Follow-up added (P16): the 60/40 OOS split sits in a bull window — a bear-LOCATED OOS test
+(train on a bull, evaluate on the 2022 bear specifically) would directly stress the findings
+that currently lean on a bull test-half (esp. the P10 haircut). Lower priority than it sounds:
+the walk-forward already exposes the bear slice; this would just sharpen the point estimate.
+
 ## 2026-06-20 · P13 (+ unblocks P6) · throttled-fetch + local cache → LONGER multi-cycle validation — the recent window was BULL-FLATTERED; edge persists but DD is ~2x deeper
 Why this matters: the #1 caveat on EVERY prior finding is sample size — ~3.3yr, one OOS
 window. P6 tried to fix it and got rate-limited by KuCoin (deep concurrent fetch → partial
