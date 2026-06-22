@@ -122,13 +122,29 @@ and honesty over peak backtest return. Highest-value first.
       mean → SWR 0). NO config change. Only correction = P13's already-known maxDD ~80% (not ~46%)
       + Sharpe ~0.8–0.9. Caveat → P16.
 
-- [ ] **P16 — Bear-LOCATED OOS test (sharpen P15's caveat).** P15's 60/40 split lands the TEST
-      half post-2023 (a bull window), so its per-finding "OOS" numbers are bull-located; only the
-      FULL window + walk-forward slices actually contain the 2022 bear. Build an explicit OOS where
-      TRAIN = a bull window and TEST = the 2022 bear (Jan–Dec 2022), and re-measure the live edge +
-      the P10 survivorship haircut there directly. LOWER priority than it sounds — the WF already
-      exposes the bear slice (net −12% / Sharpe ~0.1 on 2020→, −0.89 on 2021→); this only sharpens
-      the point estimate for the findings that currently lean on a bull test-half.
+- [x] **P16 — Bear-LOCATED OOS test (sharpen P15's caveat).** DONE (LOG 2026-06-21,
+      scripts/p16_bear_oos.py). Continuous warmup-correct engine (validated: reproduces P13's
+      full +3349%/0.90/83% exactly), measured ONLY the rebalances dated inside the 2022 bear.
+      THREE findings: (1) live edge in the 2022 bear is WORSE than P13's per-year implied —
+      −68%/Sharpe −1.94/maxDD 65%/worstWk −28% (not −49.5%; P13's per-year slice-and-reset was
+      warmup-contaminated → optimistic). 100d-MA filter is a LAGGING top-detector (rode the
+      late-2021 book into the crash, 47% deployed through the bear). (2) P10 survivorship haircut
+      placed INSIDE the bear is TINY (~2pp at 30% death) — the OPPOSITE of P15's worry — because
+      the dual-mom filter excludes crashing/dying coins (held-to-death ~0.7). So the bull-located
+      haircut was NOT an understatement; survivorship risk doesn't concentrate in the bear. (3) a
+      bull-optimizer would TURN OFF the trend filter (drag in bulls) and lose ~15pp MORE in the
+      bear (−84%) → trend-ON is bear-justified insurance. NO config change. Caveat: one bear,
+      ~52 rebals. Feeds P17.
+
+- [ ] **P17 — Faster top-brake to cut the bear ENTRY (LOW priority, likely a re-tread).** P16
+      showed the entire −68% 2022 bear loss is concentrated in the SLOW 100d-MA rollover at the
+      top — the filter rotates to cash only AFTER price has already fallen through a lagging MA.
+      Test whether an honest faster top-brake (shorter trend MA e.g. 50d, or a BTC-200d / breadth
+      regime gate applied to the long-only book) cuts the bear ENTRY without the walk-forward
+      whipsaw that killed every prior gate (P0/P3/P11 — all return-killers in WF). Bar to clear:
+      must beat the live config in ≥4/5 walk-forward slices on the 2020→ multi-cycle panel, NOT
+      just rescue the single bear. STRONG prior this re-treads the P0/P3/P11 dead-end (gates help
+      the crash slice, tank the recovery/grind slices) — only pursue with a genuinely new angle.
 - [x] **P14 — Income/withdrawal & sequence-risk model.** DONE (LOG 2026-06-19,
       scripts/p14_income_model.py): block-bootstrap sequence-risk sim on the P10-stressed
       weekly returns w/ the P11 partial-cash dial. On the (bull-flattered) ~75%/yr stressed

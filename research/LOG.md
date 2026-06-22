@@ -5,6 +5,73 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-21 · P16 · bear-LOCATED OOS — the live edge in the 2022 bear is WORSE than P13's per-year implied (−68%, not −49.5%; warmup bug), BUT the P10 survivorship haircut placed INSIDE the bear is tiny (~2pp); a bull-optimizer would drop the very filter that limits bear losses
+Why: P15 re-validated the stack on the 2020→ panel but its 60/40 OOS split lands the TEST
+half post-2023 (a BULL window), so every per-finding "OOS" number there — especially the P10
+survivorship haircut — is bull-LOCATED, which P15 itself flagged as a lower bound. P16
+measures the live edge AND the P10 haircut DIRECTLY inside the 2022 bear, where the weak
+momentum regime and real coin deaths (LUNA May'22, Celsius/3AC Jun'22, FTX Nov'22) compound.
+Method (scripts/p16_bear_oos.py): the EXACT live engine (multi-horizon 14/30/60, K5, dual-mom
+px>100d-MA-else-cash, weekly, 15bps) runs CONTINUOUSLY over the full cached panel — momentum
+scores + the 100d MA at each rebalance use only TRAILING history (no look-ahead), so a
+rebalance dated 2022 is genuinely OOS-in-time (live params were fit on the recent ~2023→
+window). We then measure ONLY the slice of rebalances dated inside a target window. Engine
+validated: bt_window over the full panel reproduces P13 EXACTLY (+3349%/Sharpe 0.90/maxDD 83%).
+
+★ METHOD CORRECTION to P13: P13's per-year breakdown sliced-then-reset each calendar year, so
+  2022 lost Jan–Feb to the 60d warmup and computed its 100d MA on only the within-year slice
+  (NaN→all-cash until ~April). That under-counted the bear. The warmup-correct continuous read:
+  LIVE CONFIG by regime window (net / Sharpe / maxDD / worstWk / avg-deployed):
+    BEAR 2022 (calendar, 52 rebals):     −68.3%  −1.94  65%  −28%  47% deployed
+    BEAR deep 2021-11→2022-12 (60):      −75.9%  −2.12  76%  −28%  51%
+    BULL 2020-04→2021-11 (83):         +1357.3%  +2.47  46%  −22%  76%
+    BULL 2023-01→2024-12 (105):         +770.5%  +1.49  44%  −22%  85%
+  The regime asymmetry is stark: a powerful bull vehicle, a −68%/yr loser in the bear. The
+  100d-MA trend filter is too SLOW to protect at the TOP — it rode the late-2021 momentum book
+  into the early-2022 crash (still 47% deployed through the bear) and only rotated to cash after
+  the MA finally rolled over. P13's −49.5% was warmup-flattered; the honest 2022 number is −68%.
+
+TRAIN=bull / TEST=bear (does a bull-fit choice generalize, and what does TRAIN pick?):
+  TRAIN(2020-04→2021-11) selects K5, trend=OFF (bull Sharpe 2.55 — the trend filter is pure
+  drag in a raging bull). Applied to the bear TEST: net −83.7% (WORSE than live). Live config
+  (K5, trend ON) in the bear: −68.3%. Even the in-sample best-in-bear (K3 trend OFF, NOT
+  choosable ex-ante) is −82.4%. → NOTHING in the grid makes the bear profitable; trend-ON is the
+  least-bad. Key honesty point: a naive bull-optimizer would TURN OFF the trend filter and get
+  crushed ~15pp harder in the bear. The live config's trend-ON is bear-justified insurance that
+  costs return in bulls — same character as the P0/P7/P11 protective-overlay tradeoff.
+
+P10 survivorship haircut LOCATED in the bear (120 seeds, deaths placed INSIDE 2021-11→2022-12,
+measured on the 2022 slice) — the sharpened answer to P15's caveat:
+    survivors-only (live):          −68.3%   Sharpe −1.94   maxDD 65%   held-deaths 0
+    death 10% (~1 coin):            −68.3%   (Δnet  +0.0pp)
+    death 20% (~3 coins):           −68.6%   (Δnet  −0.3pp)
+    death 30% (~6 coins):           −70.1%   (Δnet  −1.8pp)   held-to-death only ~0.7
+  The in-bear haircut is TINY (~2pp at 30% death) — the OPPOSITE of P15's worry that the
+  bull-located haircut understated risk. Reason: the dual-momentum filter EXCLUDES crashing
+  coins (a dying coin is below its 100d MA, so never selected) — held-to-death stays ~0.7 even
+  at 30% deaths. The same slow filter that fails to dodge the BROAD drawdown does keep the book
+  OUT of individually-dying names. So survivorship risk does NOT concentrate in the bear for
+  this long-only-with-trend-filter strategy; P15's haircut was not understated by bull-location.
+  Trend-filter protection re-confirmed in the bear (@20% deaths): trend ON −68.6%/maxDD66%/
+  held-deaths 0.3 vs OFF −83.2%/maxDD81%/held-deaths 0.6 — the filter ~halves the incremental
+  bear damage and the held-death count. Consistent with P10/P15.
+
+VERDICT (honesty/sharpening, NO config change, no candidate): three takeaways. (1) The live
+edge in a bear is materially worse than the prior per-year breakdown showed (−68%/Sharpe −1.94,
+not −49.5%) — P13's per-year numbers were warmup-contaminated and optimistic; plan the bear
+against ~−68%/yr and a −28% worst week. (2) The 100d-MA filter is a LAGGING top-detector: it
+does not protect at the top, it rotates to cash only after the MA rolls over, so the bear-entry
+is ugly. (3) BUT survivorship risk does NOT pile on in the bear (in-bear haircut ~2pp) because
+the filter keeps the book out of dying names — so P15's "bull-located haircut is a lower bound"
+caveat is REASSURINGLY SMALL for this strategy. Net: the bear is the real cost of this edge, and
+it's a price/regime cost, not a survivorship-cliff cost. CAVEATS: one bear (~52 weekly rebals,
+~23–25 coins) — a sharpened point estimate, not a multi-bear law (pre-2020 universe too thin to
+add 2018); KuCoin survivor panel; weekly-sampled maxDD understates intra-week.
+FOLLOW-UP (P17, added): the entire bear loss is concentrated in the SLOW 100d-MA rollover at the
+top — is there an honest faster top-brake (shorter MA, or BTC-200d/breadth gate) that cuts the
+−68% bear entry WITHOUT the walk-forward whipsaw that killed every prior gate (P0/P3/P11)?
+Likely a re-tread of those dead-ends — flagged LOW priority and must clear walk-forward to count.
+
 ## 2026-06-20 · P15 · re-validate the P8/P10/P11/P14 stack on the 2020→ multi-cycle window — the whole stack HOLDS qualitatively; only correction is the (already-known) ~80% true maxDD
 Why: P13 showed the recent ~2023→ basis the prior P-numbers were fit/reported on was
 BULL-FLATTERED (Sharpe 1.33→0.91, true maxDD ~80% not ~46%). P8 (cost), P10 (survivorship),
