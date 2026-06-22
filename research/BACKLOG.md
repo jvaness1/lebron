@@ -136,15 +136,17 @@ and honesty over peak backtest return. Highest-value first.
       bear (−84%) → trend-ON is bear-justified insurance. NO config change. Caveat: one bear,
       ~52 rebals. Feeds P17.
 
-- [ ] **P17 — Faster top-brake to cut the bear ENTRY (LOW priority, likely a re-tread).** P16
-      showed the entire −68% 2022 bear loss is concentrated in the SLOW 100d-MA rollover at the
-      top — the filter rotates to cash only AFTER price has already fallen through a lagging MA.
-      Test whether an honest faster top-brake (shorter trend MA e.g. 50d, or a BTC-200d / breadth
-      regime gate applied to the long-only book) cuts the bear ENTRY without the walk-forward
-      whipsaw that killed every prior gate (P0/P3/P11 — all return-killers in WF). Bar to clear:
-      must beat the live config in ≥4/5 walk-forward slices on the 2020→ multi-cycle panel, NOT
-      just rescue the single bear. STRONG prior this re-treads the P0/P3/P11 dead-end (gates help
-      the crash slice, tank the recovery/grind slices) — only pursue with a genuinely new angle.
+- [x] **P17 — Faster top-brake to cut the bear ENTRY.** DONE (LOG 2026-06-22,
+      scripts/p17_top_brake.py): KILLED. Pursued with the genuinely-new PER-COIN angle (not the
+      dead market-wide gate): (A) symmetric shorter trend MA 30–200d, (B) novel ASYMMETRIC
+      slow-in(100d)/fast-out(30–75d). PREMISE FAILS — a faster MA does NOT brake the 2022 bear:
+      sym 50/50 = −74.6% (vs live −66.1%) and MORE deployed (52% vs 46%); asym 100/30 ~ties
+      (−67.5%). A faster MA re-enters falling coins on dead-cat bounces and multi-horizon momentum
+      keeps re-selecting them, so net exposure is equal/higher. Honest TRAIN→TEST picks sym 30/30
+      and it underperforms live OOS (Sh 0.81 vs 1.22, +136% vs +413%). One config (sym 50/50)
+      clears the LITERAL ≥4/5 WF-Sharpe bar but is a metric artifact (OOS test-half +115%/0.77,
+      gives up ~300pp + makes the bear worse). Confirms the P0/P3/P11 prior now per-coin; the live
+      100d MA is the practical optimum for this lever. NO config change.
 - [x] **P14 — Income/withdrawal & sequence-risk model.** DONE (LOG 2026-06-19,
       scripts/p14_income_model.py): block-bootstrap sequence-risk sim on the P10-stressed
       weekly returns w/ the P11 partial-cash dial. On the (bull-flattered) ~75%/yr stressed

@@ -5,6 +5,54 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-22 · P17 · faster per-coin top-brake to cut the 2022 bear ENTRY — KILLED (premise fails: a faster trend MA does NOT brake the bear, it whipsaws into falling coins; one config clears the literal WF-Sharpe bar but is a metric artifact that loses ~300pp of OOS return and makes the bear WORSE)
+Why: P16 showed the entire −68% 2022-bear loss is concentrated in the SLOW 100d-MA rollover at
+the top — the live dual-momentum filter rotates a held coin to cash only AFTER price has fallen
+through a lagging 100d MA (~46% deployed straight through the bear). P17 asks whether a faster
+top-brake cuts that bear ENTRY. The backlog flagged a STRONG prior this re-treads the P0/P3/P11
+dead-end (every MARKET-WIDE gate was a return-killer in walk-forward), so I only pursued it with
+a genuinely NEW angle: stay PER-COIN (the gates that died were whole-book breadth/BTC signals).
+Two distinct per-coin levers — (A) symmetric shorter trend MA (the direct P16 suggestion, 30–200d
+for both entry+keep), (B) a novel ASYMMETRIC "slow-in/fast-out": require px>100d MA to OPEN a new
+slot (don't chase chop) but only px>fast MA (30/50/75d) to KEEP one already held (brake the EXIT
+without making entries jumpier — something a single symmetric MA and a regime gate both can't say).
+
+Method: scripts/p17_top_brake.py. EXACT live engine (multi-horizon 14/30/60d momentum, top-5,
+weekly, equal-weight, 15bps/side); only the trend rule changes. Cached KuCoin daily 2020→ multi-
+cycle panel (~6.5y, 2363d, 36 coins — full 2022 bear in the input). MAs precomputed on the full
+panel then sliced (no per-fold MA warmup loss); momentum starts at max(LBS) in-fold (repo
+convention, comparable to P15/P16). Three lenses: (1) full + OOS-test-half + 5-slice walk-forward
+per-fold Sharpe vs LIVE; (2) honest TRAIN(first 60%)→TEST selection; (3) bear-LOCATED slice
+(rebalances dated inside 2022) + bull contrast (2023→24) for the mechanism.
+Bar (from backlog): beat LIVE in ≥4/5 WF slices on 2020→, NOT just rescue the one bear.
+
+Results:
+  * (3) MECHANISM FAILS — the brake doesn't brake. 2022-bear-located, LIVE 100d = −66.1% / Sh
+    −1.66 / 46% deployed. sym 50/50 = −74.6% / −1.87 / 52% deployed (WORSE + MORE exposed).
+    asym 100/50 = −72.1%. asym 100/30 = −67.5% (~tie). A faster MA exits a rollover sooner but
+    ALSO re-enters falling names on dead-cat bounces sooner, and the multi-horizon momentum keeps
+    re-selecting the same falling coins each week — net bear exposure is equal-or-higher, loss
+    equal-or-worse. The slow 100d MA is, perversely, the LEAST-bad brake here.
+  * (2) HONEST TRAIN→TEST REJECTS every faster brake. TRAIN-best by Sharpe = sym 30/30 (train Sh
+    0.94) → TEST +136% / Sh 0.81 / DD 63%, vs LIVE TEST +413% / Sh 1.22 / DD 49%. The honest
+    methodology picks a faster brake and it underperforms live OOS on return AND Sharpe AND DD.
+  * (1) ONE config (sym 50/50) clears the LITERAL ≥4/5 WF-Sharpe bar (WF [3.00,0.64,1.08,1.61,
+    1.12] beats LIVE [2.92,0.43,0.13,1.84,0.88] in folds 0/1/2/4). But it is a single-metric
+    ARTIFACT: the 5 folds reuse the train half, and on the pure OOS test half sym 50/50 = +115%
+    / Sh 0.77 — it gives up ~300pp of return and 0.45 of Sharpe vs LIVE (+413% / 1.22), and it
+    makes the target bear WORSE. Fails the "NOT just rescue the bear" intent in the opposite
+    direction (it doesn't even rescue it). No asymmetric config clears even the literal bar (best
+    asym 100/30 = 3/5). Tightened the script's verdict to require beating LIVE on the OOS test
+    half too, so a future run isn't misled by the raw 4/5.
+VERDICT: KILL. No config change. The per-coin angle does NOT escape the P0/P3/P11 tradeoff —
+brakes help nothing here because the live trend filter is already the slowest (lowest-whipsaw)
+brake, and speeding it up trades OOS return for nothing (it doesn't even cut the bear, because
+momentum re-selection refills the book faster than the MA empties it). The live 100d MA is at the
+practical optimum for this lever. CAVEAT: one multi-cycle panel, one 2022 bear (~52 rebals);
+per-fold Sharpe over 5 small slices is noisy — exactly why I required the OOS-test-half + bear
+mechanism confirmation rather than trusting the 4/5. This closes the last "improve the brake"
+thread; the binding constraint remains live forward-proof (TIME), per the 2026-06-11 exhaustion note.
+
 ## 2026-06-21 · P16 · bear-LOCATED OOS — the live edge in the 2022 bear is WORSE than P13's per-year implied (−68%, not −49.5%; warmup bug), BUT the P10 survivorship haircut placed INSIDE the bear is tiny (~2pp); a bull-optimizer would drop the very filter that limits bear losses
 Why: P15 re-validated the stack on the 2020→ panel but its 60/40 OOS split lands the TEST
 half post-2023 (a BULL window), so every per-finding "OOS" number there — especially the P10
