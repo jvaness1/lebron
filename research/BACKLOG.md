@@ -135,6 +135,18 @@ and honesty over peak backtest return. Highest-value first.
       bull-optimizer would TURN OFF the trend filter (drag in bulls) and lose ~15pp MORE in the
       bear (−84%) → trend-ON is bear-justified insurance. NO config change. Caveat: one bear,
       ~52 rebals. Feeds P17.
+- [x] **P18 — Rank-buffer (hysteresis) rebalancing.** DONE (LOG 2026-06-22,
+      scripts/p18_buffer.py): KILLED. Textbook momentum buffering (Novy-Marx & Velikov / AQR) —
+      ENTER on strict top-K=5 but KEEP a held name while it stays in a wider top-N_hold band.
+      Genuinely new lever (exit/hold threshold, not trend-MA/skip/gate/vol-sizing). Sanity:
+      N_hold=5 reproduces live exactly. Mechanism CONFIRMED (turnover falls 0.43→0.25 across the
+      band) but USELESS: P8 already showed the edge is cost-robust (break-even ~3.6%/side), so a
+      40% turnover cut saves nothing, while the wider band DILUTES selection — OOS test-half
+      Sharpe/return DECREASE monotonically (1.22→0.90, 413%→168%). Honest TRAIN→TEST picks
+      N_hold=6 and it underperforms live OOS (1.19 vs 1.22, +385% vs +413%). N_hold=7 clears the
+      LITERAL ≥4/5 WF bar but loses the OOS test half (−25% return) — same metric artifact as P17.
+      Bear 2022 barely moves (−66→−64% at N_hold=12). Live "strict top-5" is the optimum for this
+      lever. NO config change.
 
 - [x] **P17 — Faster top-brake to cut the bear ENTRY.** DONE (LOG 2026-06-22,
       scripts/p17_top_brake.py): KILLED. Pursued with the genuinely-new PER-COIN angle (not the

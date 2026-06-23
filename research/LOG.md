@@ -5,6 +5,43 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-22 · P18 · rank-buffer (hysteresis) rebalancing for the LIVE long-only config — KILLED (buffering cuts turnover ~40% as designed, but since costs are already negligible (P8) that buys nothing; the wider hold band slightly DILUTES selection — honest TRAIN→TEST picks N_hold=6 and it underperforms LIVE OOS; the one config clearing the literal WF bar loses ~25% of OOS return — same metric artifact as P17)
+Why (new, backlog-exhausted → proposed hypothesis): the live engine rebalances to EXACTLY the
+top-5 each week, so a name at rank #6 is sold even if barely behind #5 (classic momentum churn).
+The textbook momentum "buffering" technique (Novy-Marx & Velikov 2016; AQR) adds HYSTERESIS:
+ENTER a name only on the strict top-K=5, but KEEP a held name as long as it stays inside a wider
+band (top-N_hold). Genuinely new lever vs the LOG — not a trend-MA (P17), skip-period (P5),
+regime gate (P0/P3/P11) or vol-sizing (P2); it changes ONLY the exit/hold threshold. N_hold==5
+reduces exactly to live (sanity-checked).
+Method: scripts/p18_buffer.py. Cached KuCoin daily, 2020→ multi-cycle panel (36 coins, ~6.5y,
+full 2022 bear in input). EXACT live engine (multi-horizon 14/30/60d momentum, top-5, px>100d MA
+else cash, weekly, equal weight, 15bps/side); only the hold band N_hold ∈ {5,6,7,8,10,12} varies.
+TRAIN-select best N_hold (first 60% by Sharpe) → report TEST; 5-slice walk-forward; turnover and
+bear-located 2022 mechanism check. Bar to clear: ≥4/5 WF-Sharpe vs LIVE AND beat LIVE on the pure
+OOS test half (Sharpe, ≤30% return give-up).
+Results:
+  * SANITY: N_hold=5 reproduces live exactly — full Sharpe 0.907, net +1220%, turnover 0.425,
+    maxDD 81% (matches the P13/P15 live-config numbers). Engine is faithful.
+  * MECHANISM CONFIRMED but USELESS: turnover falls monotonically with the band
+    (0.43→0.36→0.32→0.30→0.26→0.25 for N_hold 5→12), exactly as buffering should. But P8 already
+    showed turnover is low and the break-even cost is ~3.6%/side (~24× the 15bps assumed), so a
+    40% turnover cut saves a rounding error.
+  * NO OOS EDGE: OOS test-half Sharpe DECREASES with the band (1.22 LIVE → 1.19/1.10/0.99/1.06/
+    0.90), and net return falls (413%→385%→308%→228%→277%→168%). Honest TRAIN→TEST picks N_hold=6,
+    which underperforms LIVE OOS (Sharpe 1.19 vs 1.22, net +385% vs +413%, same 49% maxDD).
+  * Only N_hold=7 clears the LITERAL ≥4/5 WF-Sharpe bar (4/5) — but loses on the pure OOS test
+    half (Sharpe 1.10 vs 1.22, net +308% vs +413%, −25% of return). Same WF-Sharpe-is-a-noisy-
+    single-metric artifact as P17; not a real win.
+  * Bear 2022 (52 rebals): wider band barely moves it (N_hold 5→12: −66.1%→−63.7%, worstWk
+    ~−27%, deployed ~46→48%) — a hair less bad because it makes fewer fresh dead-cat re-entries,
+    not because it exits sooner. Bull 2023→24 (105 rebals): non-monotonic noise (N_hold=8 +360%
+    vs N_hold=10 +733% vs LIVE +648%) — no consistent benefit, just selection-dilution variance.
+Verdict: KILLED. Buffering does what it says (less churn) but the live edge is NOT turnover- or
+whipsaw-limited (P8 already settled cost-robustness), so trading selection freshness for lower
+turnover only dilutes returns at equal/worse Sharpe. The live "rebalance to the strict top-5"
+rule is the practical optimum for this lever. NO config change. Caveat: one multi-cycle panel,
+one 2022 bear (~52 rebals); survivors-only universe.
+
 ## 2026-06-22 · P17 · faster per-coin top-brake to cut the 2022 bear ENTRY — KILLED (premise fails: a faster trend MA does NOT brake the bear, it whipsaws into falling coins; one config clears the literal WF-Sharpe bar but is a metric artifact that loses ~300pp of OOS return and makes the bear WORSE)
 Why: P16 showed the entire −68% 2022-bear loss is concentrated in the SLOW 100d-MA rollover at
 the top — the live dual-momentum filter rotates a held coin to cash only AFTER price has fallen
