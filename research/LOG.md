@@ -5,6 +5,44 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-23 · P19 · holding count (top_k) re-validation on the live config (LOCAL data)
+KILLED. The live config holds top_k=5 — INHERITED from the original 24-coin long-short era and
+never re-validated after the config became long-only / multi-horizon 14/30/60 / px>100d-MA /
+36-coin (P4). The only K test on record (improve_sweep 2026-06-11) was single-window, long-short,
+breadth-gated, 24 coins and HINTED K=8 → higher Sharpe (1.74 vs 1.62) + lower DD — a possible
+consistency win never honestly walk-forwarded. P19 tests the holdings-COUNT lever honestly on the
+EXACT live engine (reuses P18's validated bt_buf with n_hold==top_k==K = strict top-K, no buffer).
+scripts/p19_topk.py. Data: cached KuCoin daily 2020-> (~6.5y, 2363d, 36 coins), 15bps/side, weekly.
+Sanity: K=5 full Sharpe 0.907 / maxDD 81% matches the documented live engine character (P13/P15:
+Sharpe ~0.90, maxDD ~80% on the 2020-> basis; P13's +3349% was the longer 2017-> panel).
+
+  K   oosNet%  oosSh  oosDD   WF Sharpes (vs live K5)              >live
+  3     +709%   1.29    63%   [+2.70,+0.26,+0.23,+2.01,+1.15]      3/5
+  4     +496%   1.21    58%   [+2.80,+0.50,+0.21,+1.97,+0.94]      4/5
+  5     +413%   1.22    49%   [+2.92,+0.43,+0.13,+1.84,+0.88]      LIVE
+  6     +317%   1.14    43%   [+3.18,+0.45,+0.25,+1.66,+0.59]      3/5
+  7     +283%   1.14    40%   [+3.37,+0.36,+0.15,+1.62,+0.29]      2/5
+  8     +204%   1.02    42%   [+3.28,+0.29,+0.23,+1.75,+0.14]      2/5
+  10    +140%   0.89    47%   [+3.06,+0.10,+0.32,+1.55,+0.08]      2/5
+
+THREE findings:
+(1) The improve_sweep K=8 hint does NOT replicate honestly. Wider K MONOTONICALLY WORSENS the
+    walk-forward (≥6 → 3/5,2/5,2/5,2/5) and the OOS return falls monotonically (709%→140%). Only
+    K=4 clears the literal ≥4/5 WF bar (4/5) — but its OOS Sharpe 1.21 is BELOW live's 1.22, so it
+    fails the "beat live OOS" criterion.
+(2) Honest train→test PICKS THE WRONG K AND LOSES. TRAIN (bull-heavy first 60%) Sharpes peak at
+    K=7 (1.14) → on TEST K=7 gives +283%/Sharpe 1.14, UNDERPERFORMING live K=5 (+413%/1.22) on
+    BOTH return (−130pp) and Sharpe. The train-optimal concentration does not generalize.
+(3) Mechanism = de-leveraging, not alpha. Bear-LOCATED 2022: wider K cuts DD (K3 −73.8%/74% →
+    K10 −56.1%/58%) but Sharpe is IDENTICALLY awful (~−1.66) — it only helps by being less
+    deployed (inmkt 56%→31%). In the 2023→24 bull a wider K gives up return (K3 +748% → K8 +590%)
+    at flat Sharpe. So top_k is the SAME consistency dial as P11's partial-cash / weight-cap: it
+    trims both tails ~1:1 with no Sharpe gain — NOT a free diversification win.
+VERDICT: live strict top-5 is the practical optimum for this lever. No config change. Echoes P18
+(wider hold-band dilutes selection) and P11 (de-leverage = 1:1 return cost). CAVEATS: one 2020->
+multi-cycle panel, one 2022 bear (~52 rebals), survivors-only universe; equal-weight only (a
+risk-weighted larger-K book was not tested — but P2 already killed vol-scaling, so unlikely).
+
 ## 2026-06-22 · P18 · rank-buffer (hysteresis) rebalancing for the LIVE long-only config — KILLED (buffering cuts turnover ~40% as designed, but since costs are already negligible (P8) that buys nothing; the wider hold band slightly DILUTES selection — honest TRAIN→TEST picks N_hold=6 and it underperforms LIVE OOS; the one config clearing the literal WF bar loses ~25% of OOS return — same metric artifact as P17)
 Why (new, backlog-exhausted → proposed hypothesis): the live engine rebalances to EXACTLY the
 top-5 each week, so a name at rank #6 is sold even if barely behind #5 (classic momentum churn).

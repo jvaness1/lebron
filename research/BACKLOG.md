@@ -169,5 +169,15 @@ and honesty over peak backtest return. Highest-value first.
       percent-of-equity not fixed-nominal. No config change. Re-run on multi-cycle data once P13
       lands. orig NBs: P10 haircut curve as input (done); partial cash = only DD dial (confirmed).
 
+- [x] **P19 — Holding count (top_k) re-validation on the live 36-coin config.** DONE (LOG
+      2026-06-23, scripts/p19_topk.py): KILLED. The improve_sweep K=8 hint does NOT replicate
+      honestly — wider K MONOTONICALLY worsens the walk-forward (K≥6 → 3/5,2/5,2/5,2/5) and OOS
+      return (709%→140%); only K=4 clears ≥4/5 WF but its OOS Sharpe (1.21) is below live's (1.22).
+      Honest TRAIN→TEST picks K=7 (bull-train-optimal) and UNDERPERFORMS live K=5 on BOTH return
+      (+283% vs +413%) and Sharpe (1.14 vs 1.22). Mechanism: a wider K cuts bear-2022 DD only by
+      being less deployed (inmkt 56%→31%, Sharpe identically ~−1.66) and gives up bull return 1:1
+      — the SAME consistency dial as P11 partial-cash/weight-cap, not free diversification. Live
+      strict top-5 is the optimum for this lever. NO config change.
+
 ## Done
 (findings recorded in LOG.md)
