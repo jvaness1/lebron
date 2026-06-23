@@ -179,5 +179,17 @@ and honesty over peak backtest return. Highest-value first.
       — the SAME consistency dial as P11 partial-cash/weight-cap, not free diversification. Live
       strict top-5 is the optimum for this lever. NO config change.
 
+- [x] **P20 — Rebalance-PHASE (weekday) timing-luck robustness.** DONE (LOG 2026-06-23,
+      scripts/p20_rebalance_phase.py): ROBUST + honesty fix. Every prior backtest uses ONE fixed
+      rebalance grid (i starts at max(LBS)=60, steps R=7 → one weekday). Re-ran the exact live
+      engine at all 7 weekly start offsets on the 2020→ panel. Edge is NOT a grid artifact: 7/7
+      phases positive (full + OOS); Sharpe phase-robust (full 0.87–1.25, std 0.13). BUT cumulative
+      RETURN is wildly phase-sensitive (+1032%…+7393% for the SAME strategy, CV 0.57) → quote
+      Sharpe + a band, NOT point returns (P13's "+3349%" is one phase's draw). offset-0 (all prior
+      BTs) is a CONSERVATIVE full-window draw (pctile 29), so the prior numbers are honest/under-
+      stated, not cherry-picked. 2022 bear phase-STABLE (−56%…−68%, std 4.8%). NO config change
+      (phase unknowable ex-ante). Caveat: 7 overlapping phases of one series — grid-alignment luck,
+      not regime luck.
+
 ## Done
 (findings recorded in LOG.md)

@@ -5,6 +5,49 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-23 · P20 · rebalance-PHASE (weekday) timing-luck robustness (LOCAL data)
+ROBUST — edge survives, but a real HONESTY CORRECTION on how we quote returns. NEW hypothesis
+(backlog was exhausted): every headline backtest in this repo (P13's +3349%, P15/16/17/18/19,
+the live proof) uses a SINGLE fixed rebalance grid — the engine starts at i=max(LBS)=60 and
+steps by R=7, so it always rebalances on ONE weekly phase (weekday), an arbitrary artifact of
+where the loop starts. The live bot rebalances on whatever weekday the human runs the job. If
+the edge only showed up on that one phase, a chunk of the proof would be timing luck and the
+real $100 (different weekday) would realize something else. Genuinely new lever: rebalance
+PHASE (which of 7 weekly offsets), not frequency (P1), top_k (P19), buffer (P18), trend-MA
+(P17), gate (P0/P3/P11), skip (P5) or vol-sizing (P2). This is a DISPERSION measurement, NOT
+an optimisation — the phase is unknowable ex-ante, so picking the "best" phase would be the
+worst overfit; the deliverable is the SPREAD across all 7 phases.
+METHOD (scripts/p20_rebalance_phase.py): exact live engine (multi-horizon 14/30/60d, top-5,
+px>100d MA else cash, weekly, equal-wt, 15bps/side) on the cached 2020→ multi-cycle panel
+(6.5y, 36 coins, full 2022 bear in input), run at each start offset 0..6 days. Offset 0
+reproduces every prior backtest exactly (sanity: full Sharpe 0.91 / net +1220% / maxDD 81% on
+2020→ = the documented live-config character). Report each phase full-window + OOS test-half,
+the cross-phase distribution, and the 2022-bear slice across phases.
+RESULT:
+  - ALL 7 phases positive: full-window net 7/7, Sharpe 7/7, OOS net 7/7. Edge is NOT a
+    rebalance-grid artifact — it does not depend on which weekday you rebalance.
+  - Sharpe is the PHASE-ROBUST summary: full-window Sharpe 0.87–1.25 (mean 1.06, std 0.13);
+    OOS Sharpe 0.96–1.34 (mean 1.14, std 0.11). Tight.
+  - Cumulative RETURN is wildly phase-sensitive: full-window net ranges +1032%…+7393% for the
+    SAME strategy (mean +3489%, std +1983%, coeff-of-variation 0.57). A few rebalances landing
+    on/off the big moves compound over 6.5y into a ~7x spread. → HONESTY FIX: stop quoting point
+    cumulative returns (P13's "+3349%" is one phase's draw, not a property of the strategy);
+    quote Sharpe + the phase band.
+  - offset-0 (every prior backtest) is a CONSERVATIVE full-window draw (Sharpe pctile 29,
+    net pctile 29 — below the phase mean) and a mildly favourable OOS draw (Sharpe pctile 86,
+    net pctile 71). Net of the two, the prior numbers are honest, not cherry-picked — if
+    anything the full-window cumulative figures UNDER-state the typical phase.
+  - 2022 bear is phase-STABLE: all 7 phases −56%…−68% (mean −63%, std 4.8%); offset-0 −66% is
+    a typical bear draw. The bear loss is not a timing artifact either.
+VERDICT: confidence UP — the edge is robust to rebalance-weekday timing (7/7 phases positive,
+Sharpe std only 0.13). NO config change: you cannot honestly select a phase (unknowable
+ex-ante; the live weekday is just whenever the human runs the weekly job). The actionable
+output is an HONESTY correction: report Sharpe (phase-std ~0.13) as the headline, treat any
+single cumulative-return figure as ±a wide timing band (CV ~0.57), and note offset-0/prior
+backtests are a conservative full-window draw. CAVEATS: one multi-cycle panel, survivors-only,
+and the 7 phases are overlapping views of the SAME series (highly correlated) — this measures
+grid-ALIGNMENT luck, not 7 independent histories; it cannot speak to regime luck.
+
 ## 2026-06-23 · P19 · holding count (top_k) re-validation on the live config (LOCAL data)
 KILLED. The live config holds top_k=5 — INHERITED from the original 24-coin long-short era and
 never re-validated after the config became long-only / multi-horizon 14/30/60 / px>100d-MA /
