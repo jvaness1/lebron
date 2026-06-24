@@ -5,6 +5,46 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-24 · P21 · risk-adjusted MULTI-horizon momentum ranking (LOCAL data)
+NOT ROBUST — apparent OOS win is rebalance-PHASE luck (P20 trap caught). NEW hypothesis
+(backlog exhausted). The live signal ranks by the AVG of raw 14/30/60d returns; in a crypto
+universe with per-coin daily vol ~3%->10%+, a raw-return ranking structurally over-picks the
+highest-vol names every week (a drawdown source). factor_research (2026-06-12) tested risk-
+adjusted momentum but ONLY single-30d (then multi-horizon won on a different axis and shipped),
+so risk-adjusted *multi-horizon* was never tested. Genuinely new vs P2 (vol SIZING not ranking)
+and P12 (separate low-vol SLEEVE). scripts/p21_riskadj_momentum.py, 2020-> cache panel (36
+coins, ~6.5y), exact live config (top-5, dual-mom px>100d-MA-else-cash, R7, 15bps/side), only
+the ranking score changes. Variants: ra_pooled (raw_multi / 60d daily-vol), ra_perhz (each
+horizon / its own-window vol), ra_z (xs-zscore per horizon, then avg).
+METHOD: honest TRAIN->TEST select among {raw, ra_pooled, ra_perhz, ra_z}; report TEST half +
+5-slice WF + bear-2022-located + (decisive) all-7-phase robustness + vol-window sensitivity.
+RESULT (offset-0, the grid every prior BT uses):
+  variant            fullSh  oosSh  oosNet  oosDD  WF+
+  raw multi (LIVE)    0.91    1.22    413%    49%   5/5
+  ra_pooled           1.05    1.41    599%    46%   5/5   <- TRAIN honestly picks this
+  ra_perhz            1.04    1.36    534%    44%   5/5
+  ra_z                0.94    1.25    469%    50%   5/5
+  TRAIN Sharpe: raw 0.77 / ra_pooled 1.09 / ra_perhz 1.00 / ra_z 0.91 -> picks ra_pooled.
+  At offset-0 it BEATS live OOS on Sharpe (1.41>1.22), net (+599%>+413%) AND maxDD (46<49).
+DECISIVE PRESSURE TEST (P20 phase discipline): re-ran the raw-vs-ra_pooled OOS Sharpe edge at
+ALL 7 weekly start offsets. Edge (ra-raw) by phase: +0.19, +0.09, -0.01, +0.12, -0.08, -0.00,
++0.05 -> mean +0.05, std 0.08, POSITIVE ONLY 4/7. Offset-0 (the grid all prior BTs + this
+headline use) is the SINGLE MOST FAVORABLE phase (+0.19). Phase-averaged, the edge is +0.05 ±
+0.08 -> 1-sigma band [-0.03,+0.13] STRADDLES ZERO. Vol-window sensitivity: edge holds 20-60d
+(Sh 1.31/1.44/1.27/1.41) but REVERSES BELOW baseline at 90d (1.04) / 120d (0.80<1.22) -> not
+structural. Bear-2022: ra_pooled only marginally better (-62.9% vs -66.1%, worstWk -26.5 vs
+-27.3) -> the "high-vol overweight hurts in bears" thesis is barely supported. 2021-> cross-
+check (offset-0) is supportive (1.25 vs 1.09) but still one phase.
+VERDICT: the risk-adjustment DIRECTION is weakly favorable everywhere (never strongly negative
+on any axis), but the headline OOS edge is concentrated in the offset-0 phase that flatters it;
+phase-averaged it is statistically indistinguishable from the live raw ranking, and it degrades
+below baseline at longer vol windows. By our own P20 rule (quote Sharpe + band, not one phase's
+draw), this does NOT clear an honest robustness bar. NO config change — live raw multi-horizon
+stands as the optimum for this lever. Caveat: same survivor panel; the mild positive direction
+(+0.05 phase-mean, 4/7) is a hair more encouraging than the pure dead-ends but is within noise,
+so not deployable. A future angle could combine ra with a different selection axis, but on its
+own it is a (soft) dead-end.
+
 ## 2026-06-23 · P20 · rebalance-PHASE (weekday) timing-luck robustness (LOCAL data)
 ROBUST — edge survives, but a real HONESTY CORRECTION on how we quote returns. NEW hypothesis
 (backlog was exhausted): every headline backtest in this repo (P13's +3349%, P15/16/17/18/19,

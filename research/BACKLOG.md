@@ -191,5 +191,14 @@ and honesty over peak backtest return. Highest-value first.
       (phase unknowable ex-ante). Caveat: 7 overlapping phases of one series — grid-alignment luck,
       not regime luck.
 
+- [x] **P21 — Risk-adjusted MULTI-horizon momentum ranking.** DONE (LOG 2026-06-24,
+      scripts/p21_riskadj_momentum.py): NOT ROBUST (soft dead-end). ra_pooled (raw_multi/60d-vol)
+      BEATS live OOS at offset-0 (Sharpe 1.41 vs 1.22, +599% vs +413%, lower maxDD) and TRAIN
+      honestly picks it — BUT the P20 phase test kills it: the Sharpe edge across all 7 weekly
+      offsets is mean +0.05, std 0.08, positive only 4/7; offset-0 (the grid all prior BTs use)
+      is the SINGLE MOST FAVORABLE phase. Edge also reverses below baseline at 90-120d vol
+      windows. Bear-2022 only marginally better. Direction weakly favorable everywhere but within
+      noise phase-averaged -> NO config change. Live raw multi-horizon stands.
+
 ## Done
 (findings recorded in LOG.md)
