@@ -200,5 +200,18 @@ and honesty over peak backtest return. Highest-value first.
       windows. Bear-2022 only marginally better. Direction weakly favorable everywhere but within
       noise phase-averaged -> NO config change. Live raw multi-horizon stands.
 
+- [x] **P22 — Phase-TRANCHED (overlapping) rebalancing to diversify away timing luck.** DONE
+      (LOG 2026-06-24, scripts/p22_tranched.py): FREE CONSISTENCY TWEAK, NOT A SHARPE EDGE → NO
+      config change. Built the Jegadeesh-Titman overlapping construction P20 left untested (hold
+      all 7 weekly phases at once = rebalance 1/7 of book daily). NO free parameter. Daily-marked
+      accounting validated (single-phase offset-0 Sharpe 0.89 ≈ P20/P13 weekly ~0.90). But the 7
+      phases correlate at ρ=0.95 (same book offset by days) → theory Sharpe lift only ~2%, and
+      that's all it delivers: dSharpe vs honest phase-mean +0.02 full/+0.03 OOS, maxDD −1/−4pp,
+      WF 5/5 but magnitudes +0.01..+0.05 (noise). It does NOT beat live on risk-adjusted terms.
+      What it genuinely buys is eliminating the unrewarded weekday-luck DISPERSION (cumulative-net
+      CV 0.59→0, locks in ~phase-mean deterministically) — a real outcome-uncertainty cut (P20's
+      worry) but not a backtest-improvable Sharpe/return metric. Optional operational choice (2-
+      tranche {0,4} ≈ all the benefit at 2 rebal days/wk). Closes P20's open door.
+
 ## Done
 (findings recorded in LOG.md)

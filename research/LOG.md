@@ -5,6 +5,48 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-24 · P22 · phase-TRANCHED (overlapping) rebalancing to diversify away timing luck
+FREE CONSISTENCY TWEAK, NOT A SHARPE EDGE — NO config change. NEW hypothesis (backlog exhausted),
+grounded directly in P20's open door. P20 measured that the SAME live strategy realises wildly
+different cumulative returns across the 7 weekly rebalance start-offsets (CV 0.57, +1032%…+7393%)
+while Sharpe is phase-stable, and stopped at "phase unknowable ex-ante → no config change". P22
+tests the standard remedy P20 left untested: instead of rebalancing the whole book on one
+arbitrary weekday, hold all 7 phases at once (Jegadeesh-Titman 1993 OVERLAPPING portfolios =
+rebalance 1/7 of capital each day). The realised book is then ONE deterministic equal-blend of
+the 7 weekly sub-books — no weekday draw to get lucky/unlucky on. Genuinely new: P20 only MEASURED
+the dispersion; this is the construction that removes it. NO free parameter (N=7 fixed by R=7) →
+nothing to overfit. scripts/p22_tranched.py, 2020→ cache panel (36 coins, ~6.5y), exact live
+config (multi-horizon 14/30/60d, top-5, px>100d-MA-else-cash, R7, 15bps/side).
+METHOD: daily-marked fixed-fractional accounting, IDENTICAL for the 7 single phases and the blend
+(so the comparison is apples-to-apples; single-phase offset-0 daily Sharpe 0.89 reproduces P20/
+P13's weekly-grid ~0.90 — accounting validated). Honest benchmark = PHASE-MEAN (the ex-ante value
+of a random deploy weekday), NOT offset-0 (P20: a conservative pctile-29 draw) and NOT phase-max.
+Report full + OOS test-half + 5-slice WF + 2022-bear-located + 15/30/60bps cost + coarser N.
+RESULT (full window):
+  phase Sharpe mean 1.05 ± 0.12 (range 0.86–1.23); phase maxDD mean 78%; phase net mean +2977%
+    but range [+875%, +6453%] → cumulative-net CV 0.59 (P20's luck, reproduced on daily marks).
+  avg pairwise corr of the 7 phase return streams ρ = 0.951 → they are NEARLY the same book.
+    Theory Sharpe lift = √(7/(1+6ρ)) = 1.022 → only ~2%.
+  TRANCHE: Sharpe 1.07, maxDD 77%, net +2681% (≈ phase-mean), turn 21.6x/yr (≈ single 22.3x).
+    vs PHASE-MEAN: dSharpe +0.02 full / +0.03 OOS; maxDD −1pp full / −4pp OOS / −1pp bear.
+    WF tranche>phase-mean Sharpe 5/5 BUT magnitudes +0.01..+0.05 (the deterministic averaging
+    effect, within noise). Cost-robust (60bps: tranche Sh 0.95 vs phase-mean 0.93). Bear 2022
+    tranche −63% ≈ phase-mean −63%. Coarse {0,4} 2-tranche already captures it (Sh 1.08, DD 74%).
+VERDICT: the Sharpe/maxDD lift is mechanically real (averaging cuts vol) but ECONOMICALLY
+NEGLIGIBLE because ρ=0.95 — the 7 phases are the same portfolio offset by days, so there is almost
+nothing to diversify. Tranching does NOT create alpha and does NOT beat the live config on
+risk-adjusted terms. What it DOES buy is ELIMINATING the unrewarded weekday-luck dispersion
+(cumulative-net CV 0.59→0): a single-weekday live deploy is locked into a random draw from
+[+875%,+6453%] that compounds for years, whereas the blend deterministically locks in ~the
+phase-mean. That is a genuine OUTCOME-uncertainty reduction (P20's exact worry) but it is not a
+backtest-improvable Sharpe/return metric, so it does not clear the "beats live OOS" bar → NO
+config change (consistent with P20). It is an OPTIONAL operational choice if the human wants to
+remove weekday timing luck: rebalance 1/7 of the book daily (7× the manual runs for a $100 bot),
+or the lighter 2-tranche {0,4} (~2 rebal days/wk) for ~all of the benefit. This closes the door
+P20 left open: the phase-luck is real but, at ρ=0.95, tranching converts it into dispersion
+removal only, not a Sharpe/DD edge. CAVEAT: one survivors-only panel; 7 overlapping views of ONE
+series → grid-alignment smoothing, not 7 independent histories.
+
 ## 2026-06-24 · P21 · risk-adjusted MULTI-horizon momentum ranking (LOCAL data)
 NOT ROBUST — apparent OOS win is rebalance-PHASE luck (P20 trap caught). NEW hypothesis
 (backlog exhausted). The live signal ranks by the AVG of raw 14/30/60d returns; in a crypto
