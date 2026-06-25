@@ -213,5 +213,18 @@ and honesty over peak backtest return. Highest-value first.
       worry) but not a backtest-improvable Sharpe/return metric. Optional operational choice (2-
       tranche {0,4} ≈ all the benefit at 2 rebal days/wk). Closes P20's open door.
 
+- [x] **P23 — Residual (beta-adjusted) momentum ranking.** DONE (LOG 2026-06-25,
+      scripts/p23_residual_momentum.py): NOT ROBUST (soft dead-end). NEW hypothesis grounded in
+      P12 (book "dominated by common market beta") + P16 (rode high-beta into the 2022 bear); the
+      Blitz/Huij/Martens Residual Momentum anomaly ranks by momentum AFTER stripping market beta
+      (genuinely new vs P21's total-vol normalisation). Full-window Sharpe looks better (1.04-1.12
+      vs 0.91) but lives in the 2020-23 TRAIN half: honest TRAIN->TEST picks resid_t_ew and it
+      UNDERPERFORMS live OOS (Sh 0.97 vs 1.22, +207% vs +413%). The 7-phase test (P21's killer)
+      kills it — OOS Sharpe edge vs raw mean -0.21..-0.24, positive 0-1/7. HEADLINE claim FAILS:
+      2022 bear barely moves (-64.4% vs -66.1%, identical worstWk -27.3%) because the trend filter
+      already gates the bear and long-only crypto names all crash together regardless of beta-
+      adjusted ranking. 2021-> window favorable but 2020-> not -> window luck. Live raw multi-
+      horizon stands. NO config change. (May still help a long-short book; live is long-only -> moot.)
+
 ## Done
 (findings recorded in LOG.md)

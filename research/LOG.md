@@ -5,6 +5,45 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-25 · P23 · residual (beta-adjusted) momentum ranking
+NOT ROBUST — soft dead-end, NO config change. NEW hypothesis (backlog exhausted), grounded
+directly in two prior findings: P12 diagnosed the core weakness as "the long-only crypto book is
+dominated by common market beta" (no second sleeve diversifies it), and P16 showed the live signal
+rode HIGH-BETA names into the 2022 bear (a lagging top-detector). The documented Residual Momentum
+anomaly (Blitz/Huij/Martens 2011) targets EXACTLY that: rank by momentum AFTER stripping market
+beta, claimed to roughly halve vol and shrink momentum CRASHES. Genuinely new vs live raw and vs
+P21 (P21 risk-NORMALISED by total vol; residual momentum removes the SYSTEMATIC component — a
+different operation). scripts/p23_residual_momentum.py (reuses the validated p15 engine + 2020->
+cache panel, vectorised rolling-beta so it's fast).
+Variants (all else EXACT live: top-5, dual-mom px>100d MA else cash, weekly R=7, eq-wt, 15bps/side):
+  raw (LIVE) | resid_ew (sum daily resid, mkt=EW-universe) | resid_t_ew (Blitz IR/t form) |
+  resid_btc (mkt=BTC). beta from a trailing 60d regression.
+RESULTS:
+  (1) FULL-window Sharpe looks BETTER for residual (resid_ew 1.04 / resid_t_ew 1.12 / resid_btc 1.01
+      vs raw 0.91, huge full net) — BUT that edge sits in the 2020-23 TRAIN half.
+  (2) HONEST TRAIN->TEST: TRAIN picks resid_t_ew (train Sh 1.14); its OOS = Sh 0.97 / +207% vs live
+      raw OOS Sh 1.22 / +413%. The honestly-selected variant UNDERPERFORMS live OOS. FAIL.
+  (3) HEADLINE CLAIM FAILS — located inside the 2022 bear, residual barely moves: resid_ew -64.4%
+      (vs raw -66.1%), worstWk IDENTICAL -27.3%, maxDD 67% vs 69%. No crash protection. Mechanism:
+      the dual-mom trend filter already gates bear deployment (P16), and in a long-only crypto book
+      the idiosyncratically-strong names still crash with the market — stripping beta from the
+      RANKING doesn't change WHICH coins crash together (they all do). The P12 beta-domination is so
+      total it defeats the very fix designed for it.
+  (4) PHASE-ROBUSTNESS (P20, the gate that KILLED P21): residual's OOS Sharpe edge vs raw across all
+      7 weekly offsets = mean -0.21..-0.24, positive only 0/7 (resid_ew, resid_btc) / 1/7
+      (resid_t_ew). The full-window Sharpe advantage is grid/phase-alignment + TRAIN-period luck,
+      not a real OOS edge — residual is WORSE on average every phase.
+  (5) beta-window sensitivity (OOS): only beta_w=30 ties live (1.24 vs 1.22); 45/60/90 underperform,
+      120 collapses to 0.69 — knife-edge, not robust.
+  (6) 2021-> window cross-check: here residual WINS (resid_btc 1.49, resid_ew 1.33 vs raw 1.09) —
+      opposite sign to the 2020-> OOS -> window-dependence, the phase/window-luck signature, not edge.
+VERDICT: beta-adjusting the momentum RANKING does not produce a robust OOS improvement and, notably,
+does NOT deliver its theoretical bear-crash protection in this long-only crypto universe. Same in
+character as P21 (favorable at one window/phase, killed by the 7-phase honesty test). Live raw
+multi-horizon ranking is the optimum for this lever. NO config change. Caveat: one bear, ~945d OOS,
+survivors-only; residual momentum may still help a LONG-SHORT book (where beta truly nets out) —
+but the live US-spot path is long-only, so moot here.
+
 ## 2026-06-24 · P22 · phase-TRANCHED (overlapping) rebalancing to diversify away timing luck
 FREE CONSISTENCY TWEAK, NOT A SHARPE EDGE — NO config change. NEW hypothesis (backlog exhausted),
 grounded directly in P20's open door. P20 measured that the SAME live strategy realises wildly
