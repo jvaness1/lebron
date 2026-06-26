@@ -226,5 +226,29 @@ and honesty over peak backtest return. Highest-value first.
       adjusted ranking. 2021-> window favorable but 2020-> not -> window luck. Live raw multi-
       horizon stands. NO config change. (May still help a long-short book; live is long-only -> moot.)
 
+- [x] **P24 — Correlation-aware (cluster-decorrelated) selection within the momentum book.**
+      DONE (LOG 2026-06-25, scripts/p24_decorrelated_selection.py): KILLED. Honest TRAIN->TEST picks
+      tau=0.8 (TRAIN Sh 1.06 >> raw 0.77) but it UNDERPERFORMS live OOS (Sh 1.11 vs 1.22, +323% vs
+      +413%); the 7-phase test is decisive — decorr's OOS Sharpe edge vs raw is mean -0.13, std 0.06,
+      positive 0/7 (loses at EVERY weekly offset). At EQUAL inmkt (80%, NOT de-levering) the corr cap
+      forces skipping the top-momentum name when it correlates with a held one, and that sacrificed
+      momentum costs more than diversification buys (trendpool-backfill alone also dilutes, 1.14 OOS,
+      same as P18/P19). Bear-2022 is the only place the mechanism shows (-61% vs -66% at equal deploy)
+      but worstWk identical (-27.3%, coincident market crash) and it doesn't generalise. Confirms P12
+      ("market-beta-dominated, can't cheaply diversify") on the SELECTION axis. Live strict top-5 is
+      the optimum. NO config change. (May help a long-short book; live is long-only -> moot.)
+      NEW hypothesis (added 2026-06-25). Grounded in the LOG's strongest recurring theme: the
+      book is "dominated by common market beta" (P12), "rode the high-beta cluster into the 2022
+      bear" (P16), and EVERY consistency dial so far (P11 weight-cap, P19 wider-K, P12 sleeves)
+      reduces to PARTIAL CASH — cut net exposure 1:1 with return. Decorrelation is a genuinely
+      DIFFERENT axis: keep all 5 slots fully invested, but among trend-passing momentum candidates
+      greedily pick names whose trailing-60d return correlation to already-selected names is below a
+      cap τ (skip the redundant, take the next-highest momentum). Hypothesis: holding 5 LESS-
+      redundant names cuts drawdown WITHOUT the 1:1 return cost (deployment held equal via backfill).
+      Honesty: decompose raw(live) vs trendpool(backfill, τ=1) vs decorr(τ<1) so the decorrelation
+      effect is isolated from the backfill effect; report inmkt everywhere (a DD cut that only comes
+      from lower deployment is just partial cash again — the P11/P19 trap). Pick τ on TRAIN; report
+      TEST + 5-slice WF + the P20/P21 7-phase robustness killer + bear-2022 located. scripts/p24_*.py
+
 ## Done
 (findings recorded in LOG.md)

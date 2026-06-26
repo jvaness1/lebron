@@ -5,6 +5,54 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-25 · P24 · correlation-aware (cluster-decorrelated) selection within the book
+NOT ROBUST — clean negative, NO config change. NEW hypothesis (backlog exhausted), on an axis
+nothing in the LOG had touched. Grounded in the strongest recurring theme: the book is "dominated
+by common market beta" (P12), "rode the high-beta cluster into the 2022 bear" (P16), and EVERY
+consistency dial so far (P11 weight-cap, P19 wider-K, P12 low-vol sleeve) reduced to the SAME
+partial-cash lever — cut net exposure, lose return 1:1. Decorrelation is genuinely DIFFERENT: keep
+all 5 slots fully invested but pick LESS-redundant names, so a drawdown cut (if any) need NOT cost
+return 1:1. scripts/p24_decorrelated_selection.py, 2020-> cache panel (6.5y, 36 coins, 15bps/side).
+
+METHOD: among trend-passing momentum candidates ranked by the live multi_score, greedily pick 5
+skipping any whose trailing-60d return-correlation to an already-picked name exceeds a cap tau; if
+the cap leaves <5, BACKFILL by momentum so deployment == the no-cap pool (isolates WHICH 5 at EQUAL
+gross — a DD cut from lower deployment would just be partial cash again, the P11/P19 trap). Decompose
+raw(live, strict top-5 cash-below-MA) vs trendpool(backfill cashed slots, tau=1) vs decorr(tau<1) so
+the decorrelation effect is separated from the backfill effect. tau picked on TRAIN; report TEST +
+5-slice WF + the P20/P21 7-phase rebalance-grid robustness killer + bear-2022 located. inmkt printed
+everywhere.
+
+RESULT:
+  - Honest TRAIN->TEST: TRAIN picks tau=0.8 (TRAIN Sharpe 1.06 >> raw 0.77 — flattering in-sample),
+    but OOS it UNDERPERFORMS live: Sharpe 1.11 vs 1.22, net +323% vs +413%, identical maxDD 49%.
+  - The 7-PHASE test (the P21/P23 killer) is decisive: decorr tau=0.8's OOS Sharpe edge vs raw is
+    mean -0.13, std 0.06, positive 0/7 — it LOSES at EVERY weekly rebalance offset (not even offset-0
+    favorable, unlike P21/P23). Unambiguous, not phase-luck-dependent.
+  - Mechanism confirmed but too weak: at EQUAL inmkt (decorr 80% == trendpool 80%, so NOT de-levering)
+    the cap forces skipping the highest-momentum name whenever it correlates with one already held, and
+    that sacrificed momentum is worth MORE than the diversification buys. trendpool (backfill alone,
+    no cap) ALSO underperforms live OOS (1.14 vs 1.22) — same dilution-by-widening-the-pool seen in
+    P18/P19; decorr layers a second loss on top.
+  - 2022 bear (located, the regime the hypothesis targets): the ONLY place the mechanism shows — decorr
+    tau=0.8 modestly helps at EQUAL deployment (-61% vs -66%, Sharpe -1.40 vs -1.66, maxDD 64 vs 69%,
+    inmkt 48 vs 46%). But worstWk is IDENTICAL (-27.3%) because the single worst week is a coincident
+    market-wide crash that hits all names regardless of beta-cluster diversification — exactly P12/P23's
+    point. This small, regime-specific bear help is swamped by worse bull-period selection (the OOS half
+    has no full bear) and does not generalise.
+  - tau sensitivity non-monotonic/noisy (0.6 worst OOS Sh 0.93, 0.7/0.8 ~1.11, 0.9~=trendpool 1.14 since
+    the cap rarely binds) — overfitting noise, not a stable signal. decorr_strict (no backfill) confirms
+    any extra DD cut at low tau is just de-levering (tau0.6 inmkt 72%, nheld 3.6). 2021-> window also
+    favors live (raw 1.09 vs decorr 1.00).
+VERDICT: KILLED. Decorrelating WITHIN the momentum book does not survive an honest OOS+phase test; the
+momentum sacrificed to decorrelate costs more than diversification buys, and the worst weeks are
+market-wide crashes decorrelation cannot dodge. Confirms P12's "market-beta-dominated, can't cheaply
+diversify" now on the SELECTION axis. Live strict top-5 is the optimum for this lever. NO config change.
+(May still help a long-short book where idiosyncratic spread matters; live is long-only -> moot.)
+Caveat: one greedy decorr construction, fixed 60d corr window, 36-coin survivor panel.
+
+---
+
 ## 2026-06-25 · P23 · residual (beta-adjusted) momentum ranking
 NOT ROBUST — soft dead-end, NO config change. NEW hypothesis (backlog exhausted), grounded
 directly in two prior findings: P12 diagnosed the core weakness as "the long-only crypto book is
