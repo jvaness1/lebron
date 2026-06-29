@@ -300,3 +300,42 @@ fold  thr    trainSH   OOS SH    maxDD     ret%  active%
 wrote /Users/jamesvaness/hermes-trading/research/walk_forward_p0a.json
 ```
 
+
+## 2026-06-29 · HEALTHCHECK (deterministic, automated)
+
+Live config: # above their 100d MA (dual momentum), else cash. Weekly rebalance. ~halves drawdown vs   indicator: xsmom   lookback_days: 30   momentum_lookbacks: [14, 30, 60]   top_k: 5   trend_ma_days: 100 rebalance_days: 7 risk: 
+
+```
+### drift: live realised vs backtest (same dates)
+
+Live equity points logged: 3
+Window: 13 days, 3 rebalances
+  LIVE     equity multiple: 0.7808  (-21.9%)
+  BACKTEST equity multiple: 0.8361  (-16.4%)
+  DRIFT (live - backtest):  -5.54 pct-points
+
+⚠️  Live diverges from backtest by 5.5pp. Investigate before trusting:
+   fills/slippage worse than modelled, data differences, or edge decay.
+
+### edge persistence: xsmom walk-forward
+WFV P0a · xsmom + breadth-regime gate
+panel 16x1200 1199d
+
+-- fold results --
+fold  thr    trainSH   OOS SH    maxDD     ret%  active%
+0     0.4       0.11     1.25     2.4%     +5.0%      53%
+1     0.4      -0.09    -0.18     0.9%     -0.2%      24%
+2     0.4      -0.09    -0.15     1.6%     -0.3%      53%
+3     0.4      -0.09     2.36     0.1%     +1.4%      12%
+4     0.4      -0.06    -2.96     4.2%     -4.2%      24%
+
+-- walk-forward aggregate --
+  OOS Sharpe: 0.17
+  maxDD:      4.8%
+  total ret:  +1.5%
+  active ~    33% of the time
+  folds:      5
+
+wrote /Users/jamesvaness/hermes-trading/research/walk_forward_p0a.json
+```
+
