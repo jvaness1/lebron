@@ -5,6 +5,60 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-06-29 · P25 · momentum-horizon COMPOSITION robustness (the core-alpha parameter)
+STRONG LEAD (not a dead-end), but NO config change this run. NEW hypothesis (backlog exhausted).
+The live signal ranks by the EQUAL-WEIGHT average of raw 14/30/60d returns; that basket was chosen
+ONCE (2026-06-12) only against single-30d and NEVER swept since. Genuinely distinct from P21 (vol
+risk-adjust) and P23 (strip beta), which both kept these horizons and only changed per-coin
+normalization — P25 varies the horizon basket/weighting itself with RAW returns. scripts/
+p25_horizon_composition.py, 2020-> cache panel (~6.5y, 36 coins, 15bps/side), + an INDEPENDENT
+2017-2020 earlier window from the P13 deep cache. Honesty: a fixed GLOBAL warmup (90d) so all
+variants score the IDENTICAL rebalance dates (apples-to-apples).
+
+VARIANTS (all else EXACT live: top-5, dual-mom px>100d MA else cash, weekly R7, eq coin wt): live
+equal[14,30,60] | fast[7,14,30] | slow[30,60,90] | wide[14,30,60,90] | pair[30,60] | single30 |
+single60 | wlong(wt prop lb) | wshort(wt prop 1/lb) | rankavg(equal-wt xs-RANK per horizon).
+
+RESULTS:
+  - LIVE BLEND IS NOT TRAIN-OPTIMAL: live equal-[14,30,60] has TRAIN Sharpe 0.89 — the 3rd-LOWEST
+    of the 10 variants. A whole CLUSTER of shorter / contribution-equalized variants beats it on
+    TRAIN: single30=1.08, fast=1.07, rankavg=1.07, wide/wshort/slow~0.98-0.99. So the live basket
+    is not the honest optimum on the selection half — it's near the bottom.
+  - DIRECTION IS CONSISTENT ACROSS 3 WINDOWS: shorter-horizon emphasis beats live and ADDING the
+    90d horizon HURTS. (a) 2020-split OOS (2023-09->2026): fast Sh 1.22, wshort 1.31, rankavg 1.13
+    vs live 1.04. (b) 2021-> OOS (2024-04->2026): fast 1.24, wshort 1.22, rankavg 1.08 vs live 0.89.
+    (c) INDEPENDENT 2017-2020 (9 coins w/ history, used nowhere else): fast +0.58, single30 +0.53,
+    wshort +0.30 vs live +0.25; slow/wide(+90d) -0.29 (WORSE), single60 +0.21 (worse). Mechanism:
+    averaging RAW returns over-weights the longest horizon (60d returns are ~2-4x the magnitude of
+    14d), so live equal-[14,30,60] is secretly a SLOW-momentum signal; equalizing per-horizon
+    CONTRIBUTION (rank-avg / inverse-horizon wt) restores faster, better-Sharpe selection.
+  - THE PHASE KILLER (P20/P21, which killed P21/P23) SEPARATES the cluster cleanly:
+      * CONFIG-EXPRESSIBLE horizon-set swaps are GRID-LUCK, NOT robust: fast[7,14,30] OOS phase-avg
+        dSharpe +0.00 (5/7), full-window +0.04 (4/7) — its headline offset-0 OOS 1.22 vs 1.04 is
+        largely a favorable-offset artifact (same trap as P21). single30 OOS phase-avg -0.08 (1/7),
+        full +0.04 (6/7) but FAILS the main OOS half (0.93<1.04). So a config-only momentum_lookbacks
+        change does NOT survive honestly.
+      * CONTRIBUTION-EQUALIZATION is GENUINELY phase-robust: rankavg full-window phase-avg dSharpe
+        +0.13 positive 7/7, OOS +0.07 5/7; wshort full +0.11 6/7, OOS +0.14 6/7. These beat live on
+        TRAIN (1.07/0.98 vs 0.89 — preferred WITHOUT an OOS peek) AND every OOS window AND survive
+        the grid-luck test that killed P21/P23. rankavg also lower OOS maxDD (57 vs 62%) and better
+        bear-2022 (-62.7 vs -68.1%, worstWk ~tie -21.8 vs -21.5%).
+  - Turnover immaterial: rankavg/fast ~0.50-0.58/wk vs live 0.44 — P8 break-even ~3.6%/side (24x
+    the assumption), so NOT a cost artifact. Bear-2022 (located): ALL variants -59..-68%, shorter
+    modestly better; no variant rescues the coincident crash (P12/P16 market-beta domination again).
+
+VERDICT: NO config change, NO candidate yaml — disciplined / real-money-safe. The two robust
+improvements (rankavg, wshort) require an ENGINE change (rank-transform or per-horizon weighting in
+hermes_trading/portfolio.py) which is OUT OF SCOPE for research (human + tests must own engine/live
+behavior). The only CONFIG-EXPRESSIBLE shortcut (a shorter momentum_lookbacks set) is phase-luck and
+does NOT survive the honest robustness bar, so it must NOT be deployed. BUT unlike P21/P23 this is a
+real, phase-robust, multi-window, TRAIN-supported directional finding: the live equal-weight-of-raw-
+returns blend is a sub-optimal (implicitly slow) composition, and equalizing per-horizon contribution
+beats it. Logged as a LEAD -> P26 (pre-register the contribution-equalization correction as a single
+ex-ante variant, add the small engine option behind it, deep-validate on the 2017-> panel as more
+coins gain history; if it holds, THEN propose a candidate). Caveats: early window only 9 coins (thin
+cross-section); 2020/2021 OOS windows overlap heavily (one recent regime); one greedy variant set.
+
 ## 2026-06-25 · P24 · correlation-aware (cluster-decorrelated) selection within the book
 NOT ROBUST — clean negative, NO config change. NEW hypothesis (backlog exhausted), on an axis
 nothing in the LOG had touched. Grounded in the strongest recurring theme: the book is "dominated

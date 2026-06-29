@@ -250,5 +250,29 @@ and honesty over peak backtest return. Highest-value first.
       from lower deployment is just partial cash again — the P11/P19 trap). Pick τ on TRAIN; report
       TEST + 5-slice WF + the P20/P21 7-phase robustness killer + bear-2022 located. scripts/p24_*.py
 
+- [x] **P25 — Momentum-horizon COMPOSITION robustness (the core-alpha parameter).** DONE
+      (LOG 2026-06-29, scripts/p25_horizon_composition.py): STRONG LEAD, no config change. The live
+      equal-weight-[14,30,60] blend is NOT TRAIN-optimal (TRAIN Sharpe 0.89, 3rd-LOWEST of 10
+      variants) because averaging RAW returns secretly over-weights the slowest horizon (60d returns
+      ~2-4x the magnitude of 14d). A CLUSTER of shorter / contribution-equalized variants beats it on
+      TRAIN AND on 3 windows (2020-split OOS, 2021-> OOS, AND an INDEPENDENT 2017-2020 window); adding
+      90d HURTS. The P20/P21 phase killer SEPARATES the cluster: config-expressible horizon-set swaps
+      (fast[7,14,30], single30) are GRID-LUCK (phase-avg dSharpe ~0.00), but CONTRIBUTION-EQUALIZATION
+      (rank-avg / inverse-horizon wt) is genuinely phase-robust (rankavg full-window +0.13 7/7, wshort
+      +0.11 6/7) — unlike P21/P23 it survives. BUT the robust fix needs an ENGINE change (rank/weight
+      in portfolio.py, out of research scope) and the config-only shortcut isn't robust, so NO deploy.
+      Real, phase-robust, TRAIN-supported -> feeds P26.
+- [ ] **P26 — Pre-registered contribution-equalized momentum (the P25 lead, done right).** P25 found
+      the live equal-weight-of-RAW-returns [14,30,60] blend is implicitly a slow-momentum signal and is
+      beaten on TRAIN+OOS+phase by equalizing each horizon's CONTRIBUTION (rank-average per horizon, or
+      inverse-horizon weighting). This run could not deploy it: (a) it needs a small ENGINE feature (a
+      `momentum_combine: rank|invwt` option in the xsmom signal, human+tests own engine/live behavior),
+      and (b) P25 found it by a 10-variant sweep — must be RE-TESTED as a SINGLE pre-registered ex-ante
+      variant to avoid multiple-comparisons bias. Plan: (1) propose the engine option to a human (NOT a
+      research task — flag it); (2) pre-register rankavg as the one hypothesis; (3) deep-validate on the
+      2017-> panel as more coins gain history, 5-slice WF + 7-phase + bear-located; (4) ONLY if it holds
+      ex-ante, write the candidate. Until the engine supports it, this is BLOCKED on a human engine change.
+
+
 ## Done
 (findings recorded in LOG.md)
