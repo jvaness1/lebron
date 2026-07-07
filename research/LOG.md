@@ -1212,3 +1212,68 @@ Adds the rebalance-frequency axis (both directions now closed: P1 faster, P27 sl
 of single-lever tweaks that don't survive honesty. Caveat: one panel, one 2022 bear; slower R has
 fewer rebals/fold (R=28 ~13 in-bear) so per-fold Sharpe is noisier — hence weighting the phase-
 averaged full-window result most.
+
+
+## 2026-07-07 · P28 — LIVE drawdown circuit-breaker (`risk.max_drawdown_halt: 0.30`) — RISK FLAG, no config change
+
+**Why (NEW, never in the LOG, real-money-relevant).** The live config carries a risk parameter
+that NO backtest in this repo has ever modeled: `risk.max_drawdown_halt: 0.30`. In the live engine
+(hermes_trading/portfolio.py:271-289) it is a PERMANENT kill switch — the book is marked intraday
+every tick and, the first time drawdown from `peak_equity` (tracked from account inception) reaches
+30%, it emergency-flattens to cash, sets `halted:true`, and STAYS in cash until a human deletes
+portfolio.json. It never auto-re-enters. Every finding in this LOG (P13's +3349%, the entire
+validated stack) was produced with the halt OFF. Yet P13/P16 report the live config's own equity
+draws down ~65% (2022 bear) to ~80% (2020→). So the 30% halt WOULD trigger — and being permanent,
+it would flatten mid-decline and then sit in cash through the recovery. Live equity is already ~0.78
+(−22% DD per the drift tracker), one bad fortnight from a switch no validation accounts for.
+
+**Method.** scripts/p28_drawdown_halt.py. EXACT live strict-top-K weekly engine on the cached
+KuCoin 2020→ panel (2363d, 36 coins, full 2022 bear), but with FAITHFUL DAILY marking (the live
+engine checks DD intraday, not weekly) so the trigger fires at the right time. Compared halt OFF
+(the validated baseline) vs permanent {0.20,0.25,0.30,0.40} vs a naive auto-reset (flatten on
+breach, resume selection next rebalance). Sharpe annualised sqrt(365). Gates: full-window, the
+permanence "misses-the-recovery" cost, a 2021-06→2023-06 peak-through-recovery window, the P20
+phase killer (halt-trip timing is weekday-sensitive), and the OOS test half.
+
+**Result — the permanent halt is return-dominated by OFF and has a severe, irreversible failure mode.**
+- **Full 2020→:** OFF +1052% / Sharpe 0.89 / maxDD 82%. perm-0.30 (LIVE) **+39% / 0.37 / maxDD 31%**
+  — it trips ONCE (early) and then holds cash for **92% of the panel**. perm-0.20/0.25 ≈ same (+44%).
+  perm-0.40 +391%/0.85 (trips later, still locks out). The naive auto-reset is WORST (−4%/0.16,
+  302 whipsaw trips) — it re-enters into the ongoing decline every rebalance.
+- **Permanence cost:** once perm-0.30 trips, halt-OFF from that day to 2026-06 would have returned
+  +2959% (Sharpe 1.16) — that entire recovery is forgone. Net: perm-0.30 costs ~−1013pp of total
+  return vs OFF. (Caveat: the *specific* early-2020 trip and its −1013pp magnitude are a
+  start-date artifact — the backtest peak is seeded at 2020 whereas the LIVE peak is seeded at live
+  inception, June 2026. The MECHANISM — trip → permanent cash → miss the rebound — is real and would
+  recur from ANY fresh start that hits a deep-enough bear.)
+- **Bear-2022 located (2021-06→2023-06):** here the halt IS protective — OFF −55%/maxDD 78%,
+  perm-0.30 trips 2021-12-12 (near the top) and returns +23%/maxDD 32%. This is the classic
+  P0/P3/P11 DD-insurance-with-a-steep-premium tradeoff, in IRREVERSIBLE form: it cushions the bear
+  but a permanent trip also kills the 2023 rebound.
+- **Phase killer (P20):** NOT a phase artifact — perm-0.30 trips at 7/7 weekly offsets and collapses
+  mean net to 34% (vs OFF 2984%). The lockout is structural, not grid-luck.
+- **OOS test half (2023-11→):** OFF +366%/Sharpe 1.19; perm-0.30 +24%/0.42; perm-0.40 +229%/1.12.
+  Every halt variant gives up large return for lower DD.
+
+**Verdict — RISK FLAG, NO config change, NO candidate.**
+1. **Honesty gap, now closed:** the live 0.30-PERMANENT halt is untested by every prior finding and
+   is return-dominated by the halt-OFF baseline all those findings assumed. Do NOT treat the
+   validated +stack numbers as the live config's true expectation once a 30% DD occurs — after a
+   trip the live bot goes to cash and STAYS there (unattended, weekly) until a human resets it.
+2. **Why no candidate:** the only variant that "beats" the current live halt is turning it OFF (or
+   loosening it), i.e. REMOVING a real-money safety switch and re-exposing the ~80% tail. Increasing
+   tail risk is a human call, not something I deploy — and it isn't a risk-adjusted "win," just a
+   different point on the same DD-insurance/premium line (P0/P3/P11/P14). So per mandate: no
+   strategy.candidate.yaml.
+3. **What the human should weigh:** (a) accept halt-OFF's tail — defensible, since the 100d-MA trend
+   filter already delivers most of the bear DD reduction (P16: it halves DD) and P14 frames this as
+   growth (not annuity) capital; OR (b) if a circuit breaker stays, replace PERMANENT-lockout with a
+   GATED auto-reset (re-enter only when the trend filter re-qualifies names AND breadth recovers) —
+   the naive "resume next rebalance" reset whipsaws catastrophically here, so a good reset needs an
+   ENGINE change (re-entry condition in portfolio.py), same class of human+tests work as P26. At
+   minimum, add live alerting so a HALT is noticed immediately rather than silently sitting in cash.
+
+**Caveats.** One panel / one 2022 bear. Daily fixed-weight marking rebalances-to-target each day
+(vs the live book's intra-week drift), which slightly lowers compounding — OFF net +1052% here vs
+p27's weekly-marked +1220%; immaterial to the halt conclusions. Backtest peak is seeded at 2020, not
+at live inception, so trip DATES are illustrative of the mechanism, not a forecast of the live path.

@@ -287,5 +287,19 @@ and honesty over peak backtest return. Highest-value first.
       change.
 
 
+- [x] **P28 — Validate the LIVE drawdown circuit-breaker (`risk.max_drawdown_halt: 0.30`).** DONE
+      (LOG 2026-07-07, scripts/p28_drawdown_halt.py): RISK FLAG, no config change. The live halt is a
+      PERMANENT kill switch (cash until a human resets) that NO prior backtest modeled — the whole
+      validated stack assumed halt=OFF. Modeled it faithfully (daily marking): perm-0.30 is
+      return-dominated by OFF everywhere (full 2020→ +39% vs +1052%; OOS +24% vs +366%; 7/7 phases),
+      because once it trips it holds cash and forgoes the recovery (IRREVERSIBLE P0/P3/P11
+      DD-insurance/premium trap). It IS protective in the isolated 2022 bear (+23% vs −55%), so it's a
+      real risk/return knob, not free. NO candidate: the only "beat" is turning off a safety switch
+      (re-exposing the ~80% tail) — a human call. Flagged for the human: accept OFF's tail (the 100d-MA
+      filter already halves bear DD) OR replace permanent-lockout with a GATED auto-reset (engine
+      change, like P26; naive resume-next-rebalance whipsaws −4%), plus add HALT alerting so an
+      unattended trip is noticed. Closes the honesty gap: don't treat validated numbers as live truth
+      once a 30% DD occurs.
+
 ## Done
 (findings recorded in LOG.md)
