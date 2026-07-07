@@ -273,6 +273,19 @@ and honesty over peak backtest return. Highest-value first.
       2017-> panel as more coins gain history, 5-slice WF + 7-phase + bear-located; (4) ONLY if it holds
       ex-ante, write the candidate. Until the engine supports it, this is BLOCKED on a human engine change.
 
+- [x] **P27 — Rebalance INTERVAL (holding period) re-validation.** DONE (LOG 2026-07-07,
+      scripts/p27_rebalance_interval.py): KILLED. Live rebalances weekly (R=7); the only prior
+      frequency test (P1) went FASTER (daily, worse), so this tests SLOWER (R∈{10,14,21,28}) — a
+      genuinely new, config-expressible lever (rebalance_days). Sanity: R=7 reproduces live (2020→
+      Sharpe 0.907/+1220%/DD81%). Slower is monotonically worse phase-averaged (phaseMean Sharpe R7
+      1.06 > R10 1.03 > R14 0.97 > R21/28 0.84); R14/21/28 fail WF (0–1/5) and worsen the 2022 bear.
+      R=10 is an OFFSET-0 MIRAGE: default-grid full Sharpe 1.09/+3461% and TRAIN even picks it, but
+      it fails all three honest gates — OOS test-half Sharpe 1.07<1.22, WF 3/5, and the P20/P21
+      PHASE killer shows phase-mean Sharpe 1.03<1.06 (dSharpe −0.03, +ve only 3/7). The +3461% was
+      one lucky weekday draw (P20 phase-sensitivity), same class as P21/P25 config-only shortcuts.
+      Both frequency directions now closed (P1 faster, P27 slower). Live weekly R=7 stands. NO config
+      change.
+
 
 ## Done
 (findings recorded in LOG.md)

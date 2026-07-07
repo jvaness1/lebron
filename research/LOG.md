@@ -1175,3 +1175,40 @@ fold  thr    trainSH   OOS SH    maxDD     ret%  active%
 wrote /Users/jamesvaness/hermes-trading/research/walk_forward_p0a.json
 ```
 
+
+## 2026-07-07 · P27 — Rebalance INTERVAL (holding period) re-validation — KILLED
+
+**Hypothesis (NEW, config-expressible).** Live rebalances every R=7d (weekly). The only
+rebalance-frequency test on record is P1, which went the FASTER way (daily → worse). Nobody
+tested SLOWER-than-weekly. Momentum is slow-decaying (the signal itself averages 14/30/60d
+horizons; classic momentum studies rebalance monthly), so weekly may be CHURNING — selling on
+transient weekly rank-shuffle / whipsawing around the 100d-MA gate (P16). Test R ∈ {7,10,14,21,28}.
+This is the rebalance-FREQUENCY lever in the slow direction — NOT P1 (faster+diff lookback), P18
+(fixed R=7, widened exit band), P19 (top_k), P17 (trend-MA), P5 (skip), or the gate/vol levers.
+
+**Method.** scripts/p27_rebalance_interval.py. Cached KuCoin daily 2020→ panel (2363d, 36 coins,
+full 2022 bear). EXACT live strict-top-K engine; ONLY R changes; Sharpe annualised sqrt(365/R) so
+intervals compare. Sanity: R=7 reproduces live (full Sharpe 0.907, +1220%, DD 81% — matches P13's
+2020→ character). Three honest gates: (a) ≥4/5 walk-forward vs live, (b) beat live on OOS test
+half (Sharpe + ≥70% of return), (c) survive the P20/P21 PHASE killer (full-window Sharpe averaged
+over start offsets 0..6; offset-0 is just one draw).
+
+**Result — slower is worse; R=10 is an offset-0 mirage.**
+- R=14/21/28: worse on Sharpe (0.73–0.85 vs 0.91), often worse DD, WF 0–1/5. Slower reaction to
+  trend breaks (P16 lagging-exit) dominates any churn saving; bear-2022 mostly WORSE (R=28 −79%
+  vs live −66%). Dead.
+- R=10 LOOKS great at the default offset-0 grid: full Sharpe 1.09 vs 0.91, net **+3461% vs +1220%**,
+  lower DD (75 vs 81%), and TRAIN even PICKS it (0.93 vs 0.77). But it fails every honest gate:
+  OOS test-half Sharpe 1.07 < live 1.22 (net +388% < +413%); WF only 3/5; and the PHASE killer is
+  decisive — R=10's full-window Sharpe **averaged over 7 offsets is 1.03 < live 1.06** (dSharpe
+  −0.03, positive only 3/7 phases). The eye-popping +3461% is exactly the P20 artifact: cumulative
+  return is wildly phase-sensitive, and R=10's offset-0 happened to be a lucky weekday draw. Same
+  class as P21/P25's config-only shortcuts — offset-0 grid-luck, not a real edge.
+
+**Verdict.** KILLED. No rebalance interval beats live weekly across all three gates; slower
+rebalancing is monotonically worse phase-averaged (phaseMean Sharpe: R7 1.06 > R10 1.03 > R14 0.97
+> R21/28 0.84). Live weekly (R=7) is the practical optimum for this lever. **NO config change.**
+Adds the rebalance-frequency axis (both directions now closed: P1 faster, P27 slower) to the list
+of single-lever tweaks that don't survive honesty. Caveat: one panel, one 2022 bear; slower R has
+fewer rebals/fold (R=28 ~13 in-bear) so per-fold Sharpe is noisier — hence weighting the phase-
+averaged full-window result most.
