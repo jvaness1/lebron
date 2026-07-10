@@ -1393,3 +1393,63 @@ monitoring/honesty result, not a strategy change — so no strategy.candidate.ya
 **Re-run cadence:** re-run scripts/p9_drift_check.py every few live rebalances. Watch for (a) cumulative
 TE creeping past ±3pp (execution/data drift) or (b) the live draw pushing below the strategy's p5/min
 (edge decay). Neither is present yet.
+
+---
+
+## 2026-07-10 — P29: idle-cash yield on the un-deployed leg — REALISM ADD, no lever reopened
+
+**Hypothesis / gap.** Every backtest P0→P28 implicitly earns 0% on cash. But the live long-only+trend
+book is only ~72% deployed on average (this panel; P16 range 46–85%), so it sits ~28% in USDC a lot of
+the time, and live USDC can earn a real risk-free yield (~4–5%/yr HYSA/USDC reward). That idle-cash yield
+is a RISKLESS additive the whole stack ignores. Two questions: (1) how much does pricing cash add to the
+live config; (2) does pricing cash REOPEN a partial-cash lever that was killed only because cash was dead
+money (P28 DD-halt, P11 weight-cap, P11 market-DD-gate)?
+
+**Method (scripts/p29_cash_yield.py).** Extended the validated p15/p25 weekly engine and the p28
+daily-marked halt engine with a pure accounting term: weekly `+ rf*(1−deployed)*R/365` per period; daily
+`+ rf*(1−deployed)/365` per day (a halted book is 100% cash → earns full rf). No look-ahead, one assumed
+param (rf). rf=0 reproduces each engine's canonical baseline. Panel: cache 2020-01-01..2026-07-10 (~6.5y,
+2383d, 36 coins), 15bps/side. Sanity: weekly rf=0 = +1009%/Sharpe 0.87/maxDD 81%/inmkt 72% (cf p27 R7
+~+1220%/0.91; lower cumulative because the panel now extends through the recent live drawdown — same
+engine, fresher data; DD 81% matches exactly). NB the daily constant-mix engine nets +867% vs the weekly
+buy-and-hold +1009% — a rebalancing/vol-drag gap, NOT a bug; all conclusions compare rf vs rf=0 WITHIN
+each engine, so the base gap is irrelevant.
+
+**Result.**
+- **(1) DIRECT ADD is real, riskless, and SMALL.** Live config, sweep rf: cumulative net 1009%(0%) →
+  1050%(2%) → 1092%(4%) → 1113%(5%) over 6.5y; full Sharpe 0.866→0.881, OOS Sharpe 0.985→0.995, 7-phase
+  mean 1.00→1.015, maxDD unchanged 81%. At rf=4% that is +83pp cumulative over 6.5y ≈ **~1%/yr additive**
+  (≈ rf × cash-fraction ≈ 4% × 0.28) with **zero added risk** and no look-ahead. Free money — but modest.
+- **(2A) DD-halt NOT reopened.** rf=4% nearly doubles the LIVE perm-0.30 net (39%→77%, since it's 92% in
+  cash earning rf) — yet halt-OFF also rises (867%→939%), so the gap stays ~860pp. In the 2021-06..2023-06
+  bear window perm-0.30 is protective (+31% @4% vs OFF −54%), exactly P28's known bear/recovery tradeoff;
+  rf shifts nothing. A 4%/yr yield is trivial vs the ~1000pp recovery the permanent halt forgoes.
+- **(2B) Weight-cap / partial-cash NOT reopened — and it exposes the HONESTY TRAP.** At rf=0, scaling the
+  book (1.0/0.75/0.5) leaves Sharpe INVARIANT at 0.866 (pure linear de-leverage — reconfirms P11). Paying
+  rf=4% breaks that upward: scale=0.5 → full Sharpe 0.934>live 0.881, OOS 1.036>1.00, 7-phase 1.058>1.013,
+  maxDD 81%→48% — and honest TRAIN→TEST @rf=4% PICKS scale=0.5. **But that Sharpe "win" is mechanical: de-
+  levering into rf-earning cash blends in the risk-free rate (in the limit 100% cash @rf has ~∞ Sharpe — it
+  is rf, not alpha).** On the honest BOTH-return-AND-risk bar it FAILS: TEST scale=0.5 net +164% vs live
+  +302% — gives up 138pp of return. Same 1:1 (now marginally-less-than-1:1) return-for-DD trade as P11.
+- **(2C) Market-DD-gate NOT reopened.** Even @rf=4%, gate-0.15 OOS +139%/Sh0.81/0-5 WF and gate-0.25
+  +95%/0.68/1-5 WF (both ~13–18% deployed) stay far below live +302%/1.00. rf can't rescue a mostly-cash
+  overlay. Reconfirms P11/P15.
+
+**Verdict — REALISM ADD (ops), NO engine change, NO candidate, no lever reopened.** (1) Pricing idle cash
+is a genuinely NEW, honest, riskless improvement to live REALISM worth ~+1%/yr — but it is an ACCOUNT/OPS
+choice (where you custody the idle USDC), NOT a strategy.yaml parameter; the engine already goes to cash
+via the trend filter, so there is nothing to change in the config and no candidate is written. (2) Cash
+yield does NOT reopen any killed partial-cash lever: every apparent Sharpe gain from holding more cash is
+just the risk-free rate mechanically mixed in; on total return the market-beta ceiling is intact (a ~4%/yr
+yield is tiny vs the ~80% bear tail), exactly as the P29 pre-note predicted.
+
+**Recommendation for the human (ops, not engine).** Park the idle-USDC fraction (~28% of book on average)
+in a yield-bearing venue if the friction is worth it — worth ~1%/yr riskless AT SCALE. The HANDOFF already
+flagged this isn't worth it at $100 (fixed friction dominates); this run quantifies the payoff (~1%/yr on
+total equity) so the human can judge the crossover as AUM grows. Do NOT mistake the cash-yield Sharpe bump
+on de-levered configs for a reason to hold more cash — that's rf, not edge.
+
+**Caveats.** (a) rf modeled as constant & truly riskless; real USDC yield varies and carries small
+custody/counterparty/depeg risk — not literally risk-free. (b) Additive scales with the average cash
+fraction, which is regime-dependent (more cash in bears → more yield exactly when it helps a little, but
+never enough to change a verdict). (c) One venue/panel, survivor universe — same caveats as the whole stack.

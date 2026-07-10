@@ -309,8 +309,18 @@ and honesty over peak backtest return. Highest-value first.
       unattended trip is noticed. Closes the honesty gap: don't treat validated numbers as live truth
       once a 30% DD occurs.
 
-- [ ] **P29 — Idle-cash yield: model the risk-free return on the cash leg (NEW, 2026-07-10).**
-      Grounded in a MODELING GAP the whole stack shares, not a re-tread: every backtest (P0→P28) assumes
+- [x] **P29 — Idle-cash yield: model the risk-free return on the cash leg (NEW, 2026-07-10).** DONE
+      (LOG 2026-07-10, scripts/p29_cash_yield.py): REALISM ADD, no engine change, no candidate, NO lever
+      reopened. Priced `rf*(1-deployed)` on the un-deployed leg (weekly + p28 daily-halt engines; rf=0
+      reproduces baselines). (1) DIRECT ADD is real/riskless/SMALL: @rf=4% +83pp cumulative over 6.5y
+      ≈ ~1%/yr (≈ rf×cash-frac 4%×28%), Sharpe +0.015, maxDD unchanged — but it's an ACCOUNT/OPS choice
+      (where you custody idle USDC), not a strategy.yaml knob, so no candidate. (2) Cash yield does NOT
+      reopen P28 DD-halt (OFF still +860pp ahead), P11 weight-cap, or P11 market-DD-gate. EXPOSED the
+      honesty trap: de-levering into rf-earning cash raises Sharpe MECHANICALLY (it's rf, not alpha —
+      TRAIN picks scale=0.5 @rf=4% but TEST gives up 138pp of return); on the both-return-AND-risk bar
+      the market-beta ceiling holds (4%/yr is tiny vs the ~80% bear tail). Ops rec for human: park idle
+      USDC in a yield venue AT SCALE (~1%/yr riskless); HANDOFF already noted not worth the friction at $100.
+      orig: Grounded in a MODELING GAP the whole stack shares, not a re-tread: every backtest (P0→P28) assumes
       the cash leg earns 0%. But the live long-only+trend-filter book is only ~46-85% deployed (P16), i.e.
       it sits ~15-54% in cash a lot of the time, and live USDC can earn a real risk-free yield (~4-5%/yr
       HYSA/USDC reward). That idle-cash yield is a RISKLESS additive return the backtests ignore. Two
