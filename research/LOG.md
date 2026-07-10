@@ -5,6 +5,65 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-07-10 · P26 · PRE-REGISTERED rankavg (contribution-equalized momentum) — KILLED by pre-reg rule (fails the WF-consistency gate in a REAL regime), despite being the strongest lead ever tested
+Why: P25 (2026-06-29) found the live signal (rank by the equal-weight average of RAW 14/30/60d
+returns) is implicitly a SLOW-momentum signal — averaging raw returns over-weights the 60d horizon
+(its magnitude is ~2-4x the 14d) — and that equalizing each horizon's CONTRIBUTION via a cross-
+sectional RANK-average ("rankavg") beats it on TRAIN + 3 windows AND, unlike the phase-luck variants
+P21/P23, SURVIVES the P20/P21 7-phase grid-luck killer (full +0.13 7/7, OOS +0.07 5/7). But P25 found
+rankavg inside a 10-VARIANT sweep → multiple-comparisons risk. P26 removes that risk the only honest
+way: PRE-REGISTER rankavg as the SINGLE ex-ante hypothesis (justified by a MECHANISM — equalize per-
+horizon contribution — not by a sweep), commit a full 5-condition decision rule BEFORE looking at any
+TEST/phase output, then run the deep battery.
+
+Method (scripts/p26_rankavg_preregistered.py, reuses the validated P25/P15 bt+make_score engine so
+'live' reproduces canonical: FULL 2020→ net 3264% / Sharpe 1.08 / DD 78%). Deep cache panel 2020→
+(~6.5y, 2383d, 36 coins, 15bps/side, global warmup 90d). Only 'live' vs pre-registered 'rankavg' drive
+the decision (wshort reported as a sidecar). NOTE on the "as more coins gain history" hope in P26's
+plan: it does NOT materialize — the early cross-section is thin by real LISTING date, not cache depth,
+so 2017-2020 is still only 9 coins (BTC/ETH reach 2017; ~9 by 2020) and only ~11 days passed since P25.
+So P26's genuine addition over P25 is the PRE-REGISTRATION discipline, not new data.
+
+PRE-REGISTERED decision rule (committed ex-ante; adopt ONLY IF ALL 5 hold):
+  (A) 7-phase OOS Sharpe edge (rankavg−live) mean>0 AND ≥5/7   (B) 7-phase FULL edge mean>0 AND ≥5/7
+  (C) 5-slice walk-forward (offset-0) rankavg Sharpe>live in ≥4/5   (D) bear-2022 net ≥ live−2pp
+  (E) independent 2017-2020 net ≥ live.
+
+RESULTS (offset-0 unless noted):
+  headline  FULL: live Sh 1.08 / +3264% / DD78%   rankavg Sh 1.13 / +4312% / DD72%   [wshort 1.15/+4807%]
+  headline  2020-split OOS: live Sh 1.04 / +254% / DD56%   rankavg Sh 1.26 / +441% / DD44%  [wshort 1.27/+469%]
+  (A) [PASS] 7-phase OOS edge mean +0.07, std 0.12, positive 5/7.
+  (B) [PASS] 7-phase FULL edge mean +0.14, std 0.08, positive 7/7 (every weekday offset).
+  (C) [FAIL] 5-slice WF offset-0 = 2/5 (rankavg loses slices 1,2,3 by small margins 0.18v0.30,
+             1.25v1.29, 1.36v1.48; wins 0,4). Diagnostic — is this offset-0 grid-luck? Re-ran the WF
+             with per-slice Sharpe AVERAGED across all 7 phases: still 3/5 (<4/5). Slice 3 is a GENUINE
+             regime weakness — rankavg loses there in 0/7 phases (not an offset artifact); slice 2 a tie
+             (4/7). So C's failure is REAL per-regime inconsistency, not a phase-alignment fluke.
+  (D) [PASS] bear-2022 located: live −68.1% / Sh −2.54 / DD69% / inmkt46%  vs  rankavg −62.7% / −2.28 /
+             DD65% / inmkt41% (+5.5pp, worstWk ~tie −21.8 vs −21.5%). rankavg modestly BETTER in the bear.
+  (E) [PASS] independent 2017-2020 (9 coins, 797d): live +4.7% / Sh 0.22  vs  rankavg +9.1% / Sh 0.31
+             (+4.4pp). (its own 7-phase edge here +0.02, 3/7 — thin/informational.)
+  context   2021→ OOS: live Sh 1.01 / +165%  vs  rankavg Sh 1.34 / +344%; 7-phase edge mean +0.15, 5/7.
+
+VERDICT: KILL P26 / NO candidate / NO config change — by the pre-registered rule (4/5 PASS, but C
+FAILS). This is the DISCIPLINE working exactly as intended: the phase gates (A,B) that killed P21/P23
+look great for rankavg, and on aggregate/OOS/bear/independent-window terms rankavg genuinely beats live
+(higher OOS Sharpe 1.26 vs 1.04, +187pp OOS return, lower OOS DD 44 vs 56%, better bear, +ve every
+window) — it is the STRONGEST lead ever tested (P21/P23/P24 were clean negatives; this is not). But it
+does NOT clear a ≥4/5 walk-forward on ANY basis (2/5 offset-0, 3/5 phase-averaged), and the shortfall is
+a REAL regime — a mid-window slice (~2023-24 by fold position) where the faster contribution-equalized
+tilt lags the live slow blend in every phase. Pre-registration is the whole point: I do NOT relax a
+committed gate after the fact because the other four passed, and the failing gate reflects a true
+weakness, not a metric artifact. Same fundamental ceiling as every prior lever — a real directional edge
+that isn't consistent ENOUGH across regimes to deploy. Live equal-wt-[14,30,60] stands.
+Also moots P26's step-1 ("propose the `momentum_combine: rank|invwt` engine option to a human"): no
+point requesting an engine change for a variant that fails pre-registered validation. P26 CLOSED.
+CAVEATS: one 2020→ panel; the 5 WF folds are small/noisy (exactly why I cross-checked phase-averaged);
+2020-split and 2021→ OOS windows overlap (one recent regime); 2017-2020 is only 9 coins. A future run
+with a genuinely wider early cross-section (needs coins that simply didn't trade pre-2020 — unavailable)
+could revisit, but the WF-consistency failure is regime-driven and unlikely to move. Binding constraint
+remains live forward-proof (TIME), per the 2026-06-11 exhaustion note.
+
 ## 2026-06-29 · P25 · momentum-horizon COMPOSITION robustness (the core-alpha parameter)
 STRONG LEAD (not a dead-end), but NO config change this run. NEW hypothesis (backlog exhausted).
 The live signal ranks by the EQUAL-WEIGHT average of raw 14/30/60d returns; that basket was chosen

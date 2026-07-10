@@ -267,16 +267,19 @@ and honesty over peak backtest return. Highest-value first.
       +0.11 6/7) — unlike P21/P23 it survives. BUT the robust fix needs an ENGINE change (rank/weight
       in portfolio.py, out of research scope) and the config-only shortcut isn't robust, so NO deploy.
       Real, phase-robust, TRAIN-supported -> feeds P26.
-- [ ] **P26 — Pre-registered contribution-equalized momentum (the P25 lead, done right).** P25 found
-      the live equal-weight-of-RAW-returns [14,30,60] blend is implicitly a slow-momentum signal and is
-      beaten on TRAIN+OOS+phase by equalizing each horizon's CONTRIBUTION (rank-average per horizon, or
-      inverse-horizon weighting). This run could not deploy it: (a) it needs a small ENGINE feature (a
-      `momentum_combine: rank|invwt` option in the xsmom signal, human+tests own engine/live behavior),
-      and (b) P25 found it by a 10-variant sweep — must be RE-TESTED as a SINGLE pre-registered ex-ante
-      variant to avoid multiple-comparisons bias. Plan: (1) propose the engine option to a human (NOT a
-      research task — flag it); (2) pre-register rankavg as the one hypothesis; (3) deep-validate on the
-      2017-> panel as more coins gain history, 5-slice WF + 7-phase + bear-located; (4) ONLY if it holds
-      ex-ante, write the candidate. Until the engine supports it, this is BLOCKED on a human engine change.
+- [x] **P26 — Pre-registered contribution-equalized momentum (the P25 lead, done right).** DONE (LOG
+      2026-07-10, scripts/p26_rankavg_preregistered.py): KILLED by the pre-registered rule, despite being
+      the STRONGEST lead ever tested. Pre-registered rankavg (equal-wt cross-sectional RANK per horizon) as
+      the SINGLE ex-ante variant (mechanism-justified, not a sweep) with a committed 5-condition rule.
+      Result 4/5 PASS: (A) 7-phase OOS edge +0.07 5/7 ✓, (B) 7-phase FULL +0.14 7/7 ✓, (D) bear-2022
+      −62.7% vs −68.1% (+5.5pp) ✓, (E) 2017-2020 +9.1% vs +4.7% ✓ — AND rankavg genuinely beats live on
+      aggregate/OOS terms (OOS Sharpe 1.26 vs 1.04, +441% vs +254%, DD 44 vs 56%). BUT (C) 5-slice
+      walk-forward FAILS: 2/5 offset-0, and 3/5 even phase-averaged — slice 3 (~2023-24) loses in 0/7
+      phases, a REAL regime weakness, not offset grid-luck. Pre-registration discipline = do NOT relax a
+      committed gate post-hoc → NO candidate, NO config change. Moots P26's engine-option request (no point
+      changing the engine for a variant that failed validation). CLOSED. The contribution-equalization
+      DIRECTION is real & phase-robust but not regime-consistent enough to deploy — same ceiling as every
+      prior lever. Live equal-wt-[14,30,60] stands.
 
 - [x] **P27 — Rebalance INTERVAL (holding period) re-validation.** DONE (LOG 2026-07-07,
       scripts/p27_rebalance_interval.py): KILLED. Live rebalances weekly (R=7); the only prior
@@ -305,6 +308,26 @@ and honesty over peak backtest return. Highest-value first.
       change, like P26; naive resume-next-rebalance whipsaws −4%), plus add HALT alerting so an
       unattended trip is noticed. Closes the honesty gap: don't treat validated numbers as live truth
       once a 30% DD occurs.
+
+- [ ] **P29 — Idle-cash yield: model the risk-free return on the cash leg (NEW, 2026-07-10).**
+      Grounded in a MODELING GAP the whole stack shares, not a re-tread: every backtest (P0→P28) assumes
+      the cash leg earns 0%. But the live long-only+trend-filter book is only ~46-85% deployed (P16), i.e.
+      it sits ~15-54% in cash a lot of the time, and live USDC can earn a real risk-free yield (~4-5%/yr
+      HYSA/USDC reward). That idle-cash yield is a RISKLESS additive return the backtests ignore. Two
+      honest questions: (1) how much does a realistic cash yield (sweep the rate 0/2/4/5%/yr) add to the
+      live config's net return and Sharpe, applied ONLY to the un-deployed fraction each week? (2) Does
+      pricing cash correctly REOPEN any partial-cash lever that was killed only because cash was dead
+      money — specifically the P28 DD-halt and the P11 weight-cap/market-DD-gate: once idle cash compounds
+      at rf, is the risk/return tradeoff of holding more cash in bears materially better? METHOD: extend
+      the p25/p26 bt() to add rf*(1-deployed)*R/365 to each period's return (a pure accounting add, no
+      look-ahead, no new free parameter beyond the assumed rf); re-run the live config + re-score P28 halt
+      and P11 gate WITH cash yield; report OOS + 7-phase. PRIOR/RISK: the direct yield add is
+      mechanical/honest and near-certain to help live realism (may justify a candidate that simply
+      documents "park idle USDC at rf"); the "does it rescue a partial-cash lever" part likely STILL hits
+      the market-beta ceiling (a 4%/yr cash yield is tiny vs the ~80% bear tail), so temper expectations.
+      This is genuinely NEW (no prior item priced cash) and deployment-relevant (it's an account/ops
+      choice, not an engine change). If the yield-aware DD lever clears an honest bar, THEN flag P28's
+      gated-auto-reset engine idea to a human with real economics behind it.
 
 ## Done
 (findings recorded in LOG.md)
