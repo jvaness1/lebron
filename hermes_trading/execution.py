@@ -18,9 +18,34 @@ This module is NOT auto-run by the paper bot. It's invoked explicitly
 from __future__ import annotations
 
 import os
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional, TypeVar
+
+T = TypeVar("T")
+
+
+def _retry(fn: Callable[[], T], *, tries: int = 4, base_delay: float = 2.0,
+           what: str = "request") -> T:
+    """Call fn(), retrying on transient network/exchange errors with exponential
+    backoff. Coinbase intermittently times out or drops the connection; without
+    this a single blip crashes an entire scheduled rebalance (and it silently
+    skips that week). Only retries transient errors — real errors (bad key,
+    insufficient funds) raise immediately."""
+    import ccxt  # local import: keys-less dry-run path never needs ccxt
+    transient = (ccxt.NetworkError, ccxt.ExchangeNotAvailable, ccxt.RequestTimeout,
+                 ccxt.DDoSProtection)
+    last: Exception | None = None
+    for attempt in range(tries):
+        try:
+            return fn()
+        except transient as exc:  # noqa: PERF203
+            last = exc
+            if attempt == tries - 1:
+                break
+            time.sleep(base_delay * (2 ** attempt))   # 2s, 4s, 8s
+    raise last  # type: ignore[misc]
 
 
 def _load_env_file() -> None:
@@ -51,7 +76,7 @@ class Order:
 
 def reconcile(target_weights: Dict[str, float], holdings_usd: Dict[str, float],
               cash_usd: float, *, min_order_usd: float, max_order_usd: float,
-              max_total_usd: float) -> List[Order]:
+              max_total_usd: float, cash_buffer_frac: float = 0.0) -> List[Order]:
     """Pure: given desired weights, current per-coin USD holdings, and free cash,
     return the orders to move toward target. SELLS first (free cash), then BUYS
     within available cash and the caps. Long-only (negative/short targets ignored).
@@ -61,6 +86,9 @@ def reconcile(target_weights: Dict[str, float], holdings_usd: Dict[str, float],
       - never buy more than available cash allows
       - total deployed (held + new buys) never exceeds max_total_usd
       - each order clamped to max_order_usd; orders below min_order_usd skipped
+      - cash_buffer_frac reserves that fraction of free cash unspent so a market
+        BUY never consumes 100% of cash and fail on the fee/spread charged on top
+        (Coinbase needs cost + fee <= balance, else INSUFFICIENT_FUND).
     """
     held_total = sum(max(0.0, v) for v in holdings_usd.values())
     equity = max(0.0, cash_usd) + held_total
@@ -85,6 +113,9 @@ def reconcile(target_weights: Dict[str, float], holdings_usd: Dict[str, float],
                 available += amt                   # proceeds free up cash
 
     # 2) BUYS — increase/enter, limited by available cash and the total cap.
+    #    Reserve a fraction of free cash for fees/spread charged on top of a
+    #    market buy — otherwise the last buy tries to spend 100% and gets rejected.
+    spendable = max(0.0, available) * (1.0 - max(0.0, cash_buffer_frac))
     deployed = held_total - sum(o.usd for o in orders if o.side == "sell")
     for c in sorted(coins):
         cur = max(0.0, holdings_usd.get(c, 0.0))
@@ -93,10 +124,10 @@ def reconcile(target_weights: Dict[str, float], holdings_usd: Dict[str, float],
         cur_after = max(0.0, cur - sold)
         delta = target_usd.get(c, 0.0) - cur_after
         if delta > min_order_usd:
-            amt = min(delta, available, max_order_usd, max(0.0, max_total_usd - deployed))
+            amt = min(delta, spendable, max_order_usd, max(0.0, max_total_usd - deployed))
             if amt >= min_order_usd:
                 orders.append(Order(c, "buy", round(amt, 2)))
-                available -= amt
+                spendable -= amt
                 deployed += amt
     return orders
 
@@ -134,7 +165,7 @@ class CoinbaseBroker:
         With no keys, returns an empty/all-cash hypothetical (for offline dry-run)."""
         if not self.has_keys:
             return {}, float(os.getenv("DRYRUN_CASH_USD", "100")), {}
-        bal = self._ex.fetch_balance()
+        bal = _retry(self._ex.fetch_balance, what="fetch_balance")
         cash = float(bal.get(self.quote, {}).get("free", 0.0) or 0.0)
         holdings_usd, prices = {}, {}
         for base, amt in (bal.get("total") or {}).items():
@@ -142,7 +173,8 @@ class CoinbaseBroker:
                 continue
             sym = f"{base}/{self.quote}"
             try:
-                px = float(self._ex.fetch_ticker(sym)["last"])
+                px = float(_retry(lambda s=sym: self._ex.fetch_ticker(s)["last"],
+                                  what=f"fetch_ticker {sym}"))
             except Exception:
                 continue
             prices[base] = px

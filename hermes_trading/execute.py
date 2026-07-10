@@ -43,6 +43,8 @@ def main() -> None:
     ap.add_argument("--max-order", type=float, default=50.0, help="max USD per order")
     ap.add_argument("--max-total", type=float, default=200.0, help="max USD deployed total")
     ap.add_argument("--min-order", type=float, default=1.0, help="min USD per order")
+    ap.add_argument("--cash-buffer", type=float, default=0.02,
+                    help="fraction of free cash to leave unspent for fees/spread (default 2%%)")
     args = ap.parse_args()
 
     strategy = load_strategy()
@@ -63,7 +65,8 @@ def main() -> None:
            + (", ".join(f"{c} ${v:.0f}" for c, v in sorted(holdings.items())) or "none"))
 
     orders = reconcile(target, holdings, cash, min_order_usd=args.min_order,
-                       max_order_usd=args.max_order, max_total_usd=args.max_total)
+                       max_order_usd=args.max_order, max_total_usd=args.max_total,
+                       cash_buffer_frac=args.cash_buffer)
     if not orders:
         rprint("[green]already aligned — no orders needed.[/]")
         return
