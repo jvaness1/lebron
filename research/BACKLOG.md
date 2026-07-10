@@ -64,11 +64,16 @@ scripts/strategy_search.py, scripts/multi_asset_backtest.py. Reuse/extend them.
       43.6% is liquid mid-caps), so concentrating slippage there barely moves it — tier-C
       slippage would need ~8%/side to erase the edge. Per-coin realism CONFIRMS cost-safety.
       Noted: rolling data window shifted the most-recent OOS slice negative (~-25%) — feeds P11.
-- [~] **P9 — Live-vs-backtest drift tracker.** TOOLING BUILT (scripts/drift_tracker.py
-      + the engine now logs state/equity_history.jsonl each rebalance). Compares live
-      realised equity to a backtest over the same dates and flags divergence >3pp.
-      OPEN part: needs ≥3 live rebalances (a few weeks) before it can conclude — re-run
-      it periodically and record the tracking error in LOG.md once data accrues.
+- [x] **P9 — Live-vs-backtest drift tracker.** FIRST HONEST READ DONE (LOG 2026-07-10,
+      scripts/p9_drift_check.py). 4 live rebalances accrued (2026-06-15→07-07); live paper-engine
+      equity fell −20.7% in 3 weeks. FIDELITY PASSES: faithful v06-engine replay on the same KuCoin
+      dates = −23.18% vs live −20.68% → tracking error 2.50pp (≤3pp gate), replay-selected coins match
+      the live book. NORMALITY: −20.7%/22d sits at the 6th pctile of the strategy's own 2020→ rolling-
+      returns (p5 −21.7%) — bad-but-normal, not a broken edge. No config change (monitoring result).
+      NOTE: stale drift_tracker.py uses the wrong (v02 single-lookback, no-trend) engine — p9_drift_
+      check.py supersedes it. RE-RUN every few rebalances; flag if TE >3pp (execution drift) or live
+      draw < strategy p5/min (edge decay). STILL OPEN (separate): real Coinbase FILL drift (USD account
+      vs paper equity, USD-vs-USDT basis) — needs the account statement, outside this repo.
 
 ### Consistency & robustness agenda (added 2026-06-15) — the path to steadier real-money returns
 

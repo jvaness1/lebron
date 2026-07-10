@@ -1277,3 +1277,60 @@ phase killer (halt-trip timing is weekday-sensitive), and the OOS test half.
 (vs the live book's intra-week drift), which slightly lowers compounding — OFF net +1052% here vs
 p27's weekly-marked +1220%; immaterial to the halt conclusions. Backtest peak is seeded at 2020, not
 at live inception, so trip DATES are illustrative of the mechanism, not a forecast of the live path.
+
+
+## 2026-07-10 · P9 — Live-vs-backtest DRIFT check (first honest read, 4 live rebalances) — FIDELITY PASSES
+
+**Why now.** Live went real on Coinbase 2026-06-15. As of 2026-07-07 the engine has logged 4 weekly
+rebalances in `~/hermes-trading/state/equity_history.jsonl` — the first time the ≥3-rebalance
+threshold P9 needs is met. And it matters: live paper-engine equity (KuCoin-USDT marked, normalised
+to 1.0 at inception) fell 0.9988→0.9087→0.7798→0.7922, a **−20.7% drawdown in the first 3 weeks of
+real money** (weekly −9.0% / −14.2% / +1.6%). Two honest questions: (A) is that the STRATEGY behaving
+as backtested, or is execution broken? (B) is a −20.7% 3-week draw even unusual for this strategy?
+
+**Method.** scripts/p9_drift_check.py. Read the 4 live equity points. Reproduced the EXACT live
+strict-top-K engine (multi-horizon [14,30,60] momentum + 100d-MA trend filter, weekly, 15bps/side —
+the faithful p15/p28 engine, NOT the stale drift_tracker.py which still uses a single-lookback,
+no-trend-filter v02 engine) on the SAME KuCoin panel (cache refreshed through 2026-07-10) over the
+SAME dates, mapping each live rebalance ts to its nearest panel bar and marking daily between them.
+(A) interval-by-interval + cumulative live-vs-replay tracking error. (B) built the strategy's full
+2020→ daily-marked equity and located the live −20.7% in its distribution of overlapping 22-day
+rolling net returns.
+
+**Result — the live engine tracks the backtest; the drawdown is normal-but-unlucky.**
+- **(A) FIDELITY — tracking error 2.50pp over 3 intervals (within the ±3pp gate).** Cumulative live
+  −20.68% vs faithful replay −23.18%. Per-interval drift +0.86 / −0.88 / +3.28 pp. The replay's
+  SELECTED coins match the live book: R1→R2 replay held NEAR/INJ/XLM/WLD/ONDO = the live inception
+  book (INJ/NEAR/ONDO/WLD/XLM ✓); later intervals differ by ≤1 marginal name (replay ZEC vs live STG;
+  R3→R4 replay held only 4 names — one slot to cash as <5 passed the trend filter — the source of the
+  3.28pp interval drift). Endpoint agreement to 2.5pp says the live paper engine faithfully implements
+  the same selection + cost + marking as every backtest in this LOG. **The −21% is the STRATEGY doing
+  its thing, not a broken execution/data path.**
+- **(B) NORMALITY — 6th percentile, essentially at p5.** The strategy's own 2020→ history has 2295
+  overlapping 22-day returns: min −52.3%, p5 −21.7%, median +0.0%, p95 +40.9%, max +138.9%. The live
+  −20.7% sits at the **6th percentile** — a genuinely bad draw (worse than ~94% of 3-week windows) but
+  squarely WITHIN the strategy's demonstrated range, not a tail/broken-edge event. Consistent with the
+  known character (P13 maxDD ~80%, worstWk ~−27%): this strategy can and does draw ~20% in 3 weeks.
+- **Regime "invested" all 4 weeks** (breadth 1.0, trend filter never forced cash) → the book rode the
+  decline fully deployed. Exactly P16's finding: the 100d MA is a LAGGING top-detector; held names
+  stayed above their slow MA while falling ~20%, so the filter gave no early protection here.
+
+**Verdict — FIDELITY PASSES, no config change, no candidate.** First real-money-era validation that
+the live engine matches the backtest methodology (2.5pp TE) and that the alarming −21% opening draw is
+within-distribution unlucky timing, NOT evidence the edge is broken or execution is faulty. This is a
+monitoring/honesty result, not a strategy change — so no strategy.candidate.yaml.
+
+**Caveats (important — do not over-read).**
+1. TINY sample: 3 return intervals. This validates ENGINE FIDELITY (which needs few points), NOT the
+   forward edge (which needs many). A 2.5pp/3wk TE is reassuring but not a Sharpe verdict.
+2. This compares the live PAPER-ENGINE equity (KuCoin-USDT marked) to a KuCoin replay — so it tests
+   strategy/engine fidelity, not real Coinbase FILL quality. The real USD account carries a separate,
+   one-off ~1.14% entry cost (HANDOFF) and any USD-vs-USDT basis; that fill-drift question is NOT
+   answered here and remains open (needs the real Coinbase account statement, outside this repo).
+3. Nearest-bar mapping is ±1 day at the window edges (R1→bar 06-16, R4→bar 07-08); immaterial at 2.5pp.
+4. drift_tracker.py is STALE for v06 (single-lookback, no trend filter) — p9_drift_check.py supersedes
+   it for the current config. A human should retire or update drift_tracker.py in the engine repo.
+
+**Re-run cadence:** re-run scripts/p9_drift_check.py every few live rebalances. Watch for (a) cumulative
+TE creeping past ±3pp (execution/data drift) or (b) the live draw pushing below the strategy's p5/min
+(edge decay). Neither is present yet.
