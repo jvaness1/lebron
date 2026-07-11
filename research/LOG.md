@@ -5,6 +5,58 @@ honest verdict · any follow-up added to BACKLOG.md. Be skeptical of your own wi
 
 ---
 
+## 2026-07-10 · P30 · Frog-in-the-Pan / Information Discreteness momentum-QUALITY filter — KILLED (a genuinely NEW documented anomaly; premise does not hold OOS in this crypto long-only universe)
+Why (NEW hypothesis; backlog P0-P29 exhausted): Da, Gurun & Warachka (2014, RFS) — momentum built
+from CONTINUOUS smooth paths (info arriving in many small daily increments) continues longer and
+reverses far less than momentum built from a few DISCRETE jumps (attention-grabbing news pumps).
+Proxy = INFORMATION DISCRETENESS  ID = sign(PRET)·(%neg_days − %pos_days) over the formation window:
+a winner that rose via many small up-days has %pos high → ID LOW (continuous); one that jumped on a
+few days has ID HIGH (jumpy/reversal-prone). This is a genuinely NEW axis vs everything in the LOG —
+every prior lever changed momentum MAGNITUDE (P21 vol-norm, P23 strip-beta, P25 horizon set),
+SELECTION redundancy (P18 buffer, P19 top_k, P24 decorr), or net EXPOSURE (P0/P3/P11/P28 gates,
+P2/P11 sizing). P30 changes NONE of those — it re-ranks/filters on the QUALITY (path smoothness) of
+each name's momentum. Motivated by the LOG's two open wounds: "rode the high-beta cluster into the
+2022 bear" (P16) and "crashes are trend-reversals from calm" (P11) — jumpy/pumpy names are exactly
+what FIP is designed to avoid.
+
+Method: scripts/p30_frog_in_the_pan.py. Single validated engine mirroring p25.bt (live long-only
+K5 dual-mom px>100d-MA-else-cash, weekly R=7, eq wt, 15bps/side; live momentum = eq-wt raw
+[14,30,60]). ID formation window PRE-FIXED to 60d (= longest live horizon), committed before looking
+at TEST. Family: fip8/10/12 = double-sort (top-N by momentum → trend-pass → keep the 5 LOWEST-ID);
+tilt50/100 = soft composite rank(mom)+w·rank(−ID); idfilt = live top-5 then drop names with
+above-median ID. Deep 2020→ panel (6.5y, 2383d, 36 coins). inmkt reported everywhere (a DD cut that
+is only lower deployment = partial cash, the P11/P19 trap). Sanity: live FULL Sharpe 0.87 (cf
+p25/p13 ~0.90; small diff = 60d vs p25's 90d warmup). Gates: honest TRAIN→TEST, 5-slice WF,
+P20/P21 7-phase grid-luck KILLER, 2022-bear-located, independent 2017-2020 window.
+
+Result — KILLED:
+- HONEST TRAIN→TEST picks **fip8** (the faithful FIP double-sort; TRAIN Sharpe 1.07 vs live 0.79) and
+  it CRATERS OOS: Sharpe 0.51 vs live 0.99, net +23% vs +293%, and FAILS the 7-phase killer (edge
+  mean −0.15, positive only 2/7). fip10/fip12 are worse OOS (−20%/−40%). Crucially the double-sort
+  variants run at HIGHER deployment than live (inmkt 75-80% vs 72%) and STILL lose OOS — so this is
+  GENUINE SELECTION DEGRADATION, not partial cash: re-ranking crypto winners by low-ID discards
+  high-momentum names for a quality signal that does not predict continuation OOS here. FIP's CORE
+  PREMISE fails in this universe.
+- **tilt100** (soft low-ID tilt) is the only tempting variant — best full-window Sharpe 1.00 vs 0.87,
+  5/5 WF, bear-2022 −56.6% vs −66.1% (worstWk −20.0% vs −27.3%), and it BARELY clears the 7-phase test
+  (OOS edge mean +0.07, 5/7). BUT it is disqualified twice over: (1) it is NOT the TRAIN-selected
+  variant (TRAIN 0.84 < fip8 1.07), so adopting it is post-hoc cherry-picking; (2) its lower DD is the
+  P11/P19 PARTIAL-CASH TRAP — inmkt 60% vs live 72% (bear 32% vs 46%), i.e. the tilt pushes the top-5
+  toward names more often below their 100d MA → cashed. It still LOSES OOS at offset-0 (Sharpe 0.83 <
+  0.99, net +154% vs +293%), giving up ~half the return for the DD cut — same 1:1 de-lever trade as
+  every prior consistency dial.
+- idfilt (quality gate): lowest full net (+590%) and lowest inmkt (46%) — pure de-lever, worse.
+- 2017-2020 independent window: FIP variants ≈ live (thin, 9 coins, ~13% inmkt) — no independent lift.
+
+VERDICT: KILL. NO config change, NO candidate. A genuinely new, academically-grounded momentum-quality
+anomaly, tested honestly and rejected: the FIP double-sort's core premise (continuous-path momentum
+continues better) does NOT survive OOS in this crypto long-only book, and the only DD-flattering
+variant is un-TRAIN-selectable and reduces to partial cash. Confirms the LOG's dominant prior yet again
+(P12/P16/P24: the book is market-beta-dominated; quality/selection re-rankings can't cheaply escape it).
+Live equal-wt raw [14,30,60] momentum stands. CAVEAT: one ID-window (60d, pre-fixed to avoid a sweep);
+one bear; a wider ID window or a long-SHORT book (where FIP's reversal-avoidance has more room) is
+untested and out of scope for the live long-only spot config.
+
 ## 2026-07-10 · P26 · PRE-REGISTERED rankavg (contribution-equalized momentum) — KILLED by pre-reg rule (fails the WF-consistency gate in a REAL regime), despite being the strongest lead ever tested
 Why: P25 (2026-06-29) found the live signal (rank by the equal-weight average of RAW 14/30/60d
 returns) is implicitly a SLOW-momentum signal — averaging raw returns over-weights the 60d horizon

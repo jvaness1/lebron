@@ -339,5 +339,19 @@ and honesty over peak backtest return. Highest-value first.
       choice, not an engine change). If the yield-aware DD lever clears an honest bar, THEN flag P28's
       gated-auto-reset engine idea to a human with real economics behind it.
 
+- [x] **P30 — Frog-in-the-Pan / Information Discreteness momentum-QUALITY filter (NEW, 2026-07-10).**
+      DONE (LOG 2026-07-10, scripts/p30_frog_in_the_pan.py): KILLED. Backlog P0-P29 exhausted → new
+      hypothesis from a documented anomaly (Da/Gurun/Warachka 2014): momentum from CONTINUOUS smooth
+      paths continues/reverses-less than momentum from DISCRETE jumps; proxy ID = sign(PRET)·(%neg−%pos).
+      Genuinely new axis (path QUALITY, not magnitude/vol-norm/beta/selection/exposure); motivated by
+      P16 "rode high-beta into the bear" + P11 "crashes are reversals from calm". ID window PRE-FIXED
+      60d. Honest TRAIN→TEST picks the faithful double-sort (fip8) and it CRATERS OOS (Sharpe 0.51 vs
+      0.99, +23% vs +293%, 7-phase mean −0.15 2/7) AT HIGHER deployment (75-80% vs 72%) → genuine
+      selection degradation, FIP premise fails in crypto long-only OOS. Only tempting variant (tilt100:
+      full Sh 1.00, bear −57% vs −66%, 7-phase +0.07 5/7) is (a) NOT TRAIN-selected and (b) the P11/P19
+      partial-cash trap (inmkt 60% vs 72%, loses OOS at offset-0 +154% vs +293%). NO config change, NO
+      candidate. Reconfirms the market-beta ceiling (P12/P16/P24). Caveat: one ID window, one bear;
+      untested for a long-SHORT book (out of scope for live long-only spot).
+
 ## Done
 (findings recorded in LOG.md)
